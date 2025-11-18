@@ -1,0 +1,24 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: -webkit-fill-available;
+}
+
+body {
+  font-family: "TildaSans", Arial, sans-serif;
+  height: 100%;
+  height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+/* Расположение по центру */
+.section,
+.footer {
+  display: grid;
+  place-items: center;
+}

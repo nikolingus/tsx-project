@@ -1,0 +1,378 @@
+/* Все медиа-запросы */
+@media screen and (max-width: 1200px) {
+  .title__text {
+    font-size: 48px;
+  }
+  .video__frame {
+    width: 750px;
+    height: 450px;
+  }
+  .registration__warning {
+    margin-bottom: 50px;
+    width: 60vw;
+  }
+  .registration__input {
+    width: 50vw;
+  }
+
+  .tours__image {
+    width: 40vw;
+  }
+  .tours__content {
+    height: 30vh;
+  }
+
+  .slider__content {
+    width: 80vw;
+  }
+  .slider__dots {
+    bottom: 35px;
+  }
+  .weather__list {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 300px));
+    justify-content: center;
+    gap: 30px;
+    padding: 0 20px;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .weather__list {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 250px));
+    justify-content: center;
+    gap: 20px;
+    padding: 0 10px;
+  }
+}
+
+@media screen and (max-width: 845px) {
+  .title__text {
+    font-size: 36px;
+  }
+  .video__frame {
+    width: 650px;
+    height: 400px;
+  }
+  .registration__error {
+    margin-top: -15px;
+  }
+  .registration__warning {
+    margin-bottom: 40px;
+  }
+  .registration__input {
+    width: 60vw;
+  }
+
+  .header {
+    height: auto;
+    min-height: 20vh;
+  }
+
+  .nav {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .nav__group {
+    grid-auto-flow: row;
+    gap: 15px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav__group--left,
+  .nav__group--right {
+    order: 2;
+  }
+
+  .nav__logo {
+    order: 1;
+  }
+  .tours__item {
+    gap: 10px;
+  }
+  .tours__content {
+    height: 35vh;
+  }
+  .tours__image {
+    width: 45vw;
+  }
+  .tours__title {
+    margin-bottom: 60px;
+  }
+  .weather {
+    padding: 40px 0;
+  }
+}
+
+@media screen and (max-width: 740px) {
+  .video__frame {
+    width: 470px;
+    height: 320px;
+  }
+  .registration__warning {
+    width: 70vw;
+  }
+
+  .registration__input {
+    width: 65vw;
+  }
+
+  .tours__item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .tours__image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .tours__content {
+    width: 100%;
+    margin-left: 0;
+    height: auto;
+    display: block;
+  }
+  .tours__subtitle {
+    font-size: 20px;
+    margin: 0 0 10px 0;
+  }
+
+  .tours__text {
+    padding-bottom: 50px;
+  }
+
+  .slider {
+    height: 70vh;
+  }
+
+  .slider__slide {
+    background-size: cover;
+    background-position: center center;
+  }
+
+  .slider__content {
+    bottom: 60px;
+    max-width: 95%;
+  }
+}
+
+@media screen and (max-width: 505px) {
+  .title::before {
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center center;
+  }
+
+  .title__text {
+    font-size: 30px;
+  }
+
+  .video__frame {
+    width: 380px;
+    height: 240px;
+  }
+
+  .registration__warning {
+    margin-bottom: 30px;
+    width: 85vw;
+    margin-top: 20px;
+  }
+  .advantages__subtitle {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+  }
+
+  .registration {
+    height: 115vh;
+  }
+
+  .registration__input {
+    width: 80vw;
+    height: 50px;
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+  .registration__label {
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+  .registration__title {
+    font-size: 30px;
+  }
+  .registration__input-wishes {
+    height: 100px;
+  }
+  .registration__button {
+    width: 150px;
+    height: 40px;
+    margin-top: 30px !important;
+  }
+  .registration__error {
+    margin-top: -15px;
+  }
+
+  .slider {
+    height: 60vh;
+  }
+
+  .slider__content {
+    bottom: 50px;
+  }
+
+  .slider__dots {
+    bottom: 15px;
+  }
+
+  .slider__btn--prev {
+    left: 5px !important;
+  }
+
+  .slider__btn--next {
+    right: 5px !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .title__text {
+    font-size: 22px;
+  }
+  .title__subtext {
+    font-size: 12px;
+  }
+  .reviews__title,
+  .advantages__title,
+  .registration__title,
+  .tours__title,
+  .weather__title {
+    font-size: 24px;
+  }
+  .advantages__description {
+    font-size: 18px;
+  }
+
+  .video__frame {
+    width: 290px;
+    height: 170px;
+  }
+  .reviews__slider {
+    margin-bottom: 0vh;
+  }
+
+  .advantages__image {
+    height: 55px;
+  }
+  .advantages__subtitle {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+  }
+  .advantages__text {
+    font-size: 14px;
+  }
+  .advantages__item {
+    gap: 10px;
+  }
+  .slider__content {
+    width: 75vw;
+  }
+  .slider__text {
+    font-size: 12px;
+  }
+
+  .registration__button {
+    margin-top: 0px;
+  }
+  .registration__error {
+    margin-top: -5px;
+  }
+
+  .weather__label {
+    font-size: 20px;
+  }
+}
+@media screen and (max-width: 400px) {
+  .reviews__text {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  .reviews__button {
+    width: 40px;
+    height: 40px;
+  }
+  .registration__warning {
+    margin-top: 10px;
+    margin-bottom: 15px;
+    width: 90vw;
+    font-size: 12px;
+  }
+  .registration__input {
+    margin-bottom: 5px;
+  }
+
+  .advantages__description {
+    font-size: 15px;
+  }
+
+  .advantages__image {
+    height: 50px;
+  }
+  .advantages__subtitle {
+    font-size: 14px;
+    margin: 0 0 5px 0;
+  }
+  .advantages__text {
+    font-size: 12px;
+  }
+  .advantages__item {
+    gap: 5px;
+  }
+  .advantages__content {
+    height: 17vh;
+  }
+  .advantages__list {
+    margin-top: 10px;
+  }
+
+  .slider__content {
+    width: 70vw;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .registration__warning {
+    margin-bottom: 30px;
+    width: 85vw;
+  }
+
+  .registration__input {
+    width: 85vw;
+    height: 40px;
+    font-size: 12px;
+  }
+  .registration__label {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  .registration__error {
+    margin-bottom: 10px;
+  }
+  .registration__title {
+    margin-bottom: 40px;
+  }
+  .registration__input-wishes {
+    height: 100px;
+  }
+  .registration__button {
+    width: 140px;
+    height: 35px;
+    margin-top: 10px;
+  }
+  .slider__content {
+    width: 90vw;
+  }
+}

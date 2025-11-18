@@ -1,0 +1,34 @@
+/* Заголовок */
+.title {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  color: white;
+  text-align: center;
+}
+
+.title::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: url(/img/avatar.jpg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  filter: brightness(0.3);
+  z-index: -1;
+}
+.title__subtext {
+  margin-top: 25vh;
+  width: 60vw;
+  font-size: 16px;
+  word-spacing: 5px;
+}
+
+.title__text {
+  width: 60vw;
+  font-size: 64px;
+  margin-bottom: 25vh;
+  word-spacing: 15px;
+}

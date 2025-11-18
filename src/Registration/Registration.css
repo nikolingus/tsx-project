@@ -1,0 +1,195 @@
+/* Регистрация */
+.registration {
+  height: 100vh;
+  position: relative;
+}
+
+.registration__title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 50px;
+}
+
+.registration__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.registration__label {
+  margin-bottom: 10px;
+  font-weight: 100;
+  font-size: 20px;
+  font-weight: 100;
+  display: block;
+}
+
+.registration__input {
+  width: 40vw;
+  height: 60px;
+  margin-bottom: 30px;
+  padding-left: 1vw;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.registration__input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.registration__input::placeholder {
+  color: gray;
+}
+
+.registration__input-wishes {
+  height: 120px;
+  overflow: auto;
+  white-space: nowrap;
+  resize: none;
+  padding-top: 15px;
+  padding-right: 1vw;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin-bottom: 0px;
+  font-family: inherit;
+}
+
+.registration__button {
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  height: 60px;
+  width: 200px;
+  margin-top: 20px;
+  font-size: medium;
+  border-radius: 30px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.registration__button:hover:not(:disabled) {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.registration__button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.registration__warning {
+  width: 40vw;
+  text-align: center;
+  margin-bottom: 80px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.registration__form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.registration__message {
+  margin-top: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 40vw;
+  font-weight: 500;
+}
+
+.registration__message.success {
+  background-color: #e8f5e8;
+  color: #2d5016;
+  border: 1px solid #4caf50;
+}
+
+.registration__message.error {
+  background-color: #ffeaea;
+  color: #d32f2f;
+  border: 1px solid #f44336;
+}
+
+.registration__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #666;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Всплывающие уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  z-index: 1000;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.3s ease-out;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.notification--success {
+  background-color: #e8f5e8;
+  color: #2d5016;
+  border: 1px solid #4caf50;
+}
+
+.notification--error {
+  background-color: #ffeaea;
+  color: #d32f2f;
+  border: 1px solid #f44336;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Стили для ошибок валидации */
+.registration__input--error {
+  border: 1px solid #f44336 !important;
+  background-color: #fff5f5;
+}
+
+.registration__input--error:focus {
+  border-color: #f44336 !important;
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.25);
+}
+
+.registration__error {
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: -25px;
+  margin-bottom: 20px;
+  display: block;
+  text-align: left;
+  padding-left: 5px;
+}

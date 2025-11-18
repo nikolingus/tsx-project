@@ -1,0 +1,122 @@
+/* Слайдер */
+.slider {
+  position: relative;
+  width: 100vw;
+  height: 90vh;
+  overflow: hidden;
+}
+
+.slider__container {
+  display: flex;
+  width: 300vw;
+  height: 100%;
+  transition: transform 0.5s ease-in-out;
+}
+
+.slider__slide {
+  width: 100vw;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  background: linear-gradient(to top, rgba(0, 0, 0, 1), transparent);
+  background-attachment: scroll;
+}
+
+.slider__content {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  max-width: 90%;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+.slider__title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black,
+    1px 1px 0 black;
+}
+
+.slider__text {
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black,
+    1px 1px 0 black;
+}
+
+.slider__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: background-color 0.3s ease;
+  z-index: 100;
+}
+
+.slider__btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.slider__btn--prev {
+  left: 20px;
+}
+
+.slider__btn--next {
+  right: 20px;
+}
+
+.slider__icon {
+  width: 24px;
+  height: 24px;
+}
+
+.slider__dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.slider__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.slider__dot--active {
+  background: white;
+}
+
+/* Фоновые изображения для слайдов */
+.slider__slide--1 {
+  background-image: url(/img/gora.jpg);
+}
+
+.slider__slide--2 {
+  background-image: url(/img/river.jpg);
+}
+
+.slider__slide--3 {
+  background-image: url(/img/chong.jpg);
+}

@@ -1,0 +1,10 @@
+/* Видео */
+.video {
+  margin-top: 10vh;
+}
+.video__frame {
+  width: 1000px;
+  height: 540px;
+  text-align: center;
+  border: none;
+}
