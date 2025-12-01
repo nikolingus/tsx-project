@@ -1,179 +1,185 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
+import {
+  useQueries,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import "./Weather.css";
 
-// Определние типов данных
-interface WeatherData {
-  name: string;
-  main: {
-    temp: number;
-    feels_like: number;
-    humidity: number;
-  };
-  weather: {
-    main: string;
-    description: string;
-    icon: string;
-  }[];
+// Типы данных
+interface IMainData {
+  temp: number;
+  feels_like: number;
+  humidity: number;
 }
 
-const Weather: React.FC = () => {
-  // Хранение данных о погоде для трех городов
-  const [weatherData, setWeatherData] = useState<{
-    beijing: WeatherData | null;
-    guangzhou: WeatherData | null;
-    harbin: WeatherData | null;
-  }>({
-    beijing: null,
-    guangzhou: null,
-    harbin: null,
-  });
+interface IWeather {
+  main: string;
+  description: string;
+  icon: string;
+}
 
-  // Отслеживание процесса загрузки
-  const [loading, setLoading] = useState(true);
+interface IWeatherData {
+  name: string;
+  main: IMainData;
+  weather: IWeather[];
+}
 
-  // Координаты городов
-  const cities = {
-    beijing: { name: "Пекин", lat: 39.9042, lon: 116.4074 },
-    guangzhou: { name: "Гуанчжоу", lat: 23.1291, lon: 113.2644 },
-    harbin: { name: "Харбин", lat: 45.8038, lon: 126.534 },
-  };
+interface ICity {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+}
 
-  // Загрузка данных при первом отображении компонента
-  useEffect(() => {
-    const getWeatherData = async () => {
-      setLoading(true);
+// Правила передачи данных для WeatherCity
+interface IWeatherCityRules {
+  city: ICity;
+  weatherData: IWeatherData | null;
+  isLoading: boolean;
+}
 
-      // Параллельный запрос данных о погоде
-      const promises = Object.entries(cities).map(async ([key, city]) => {
-        // Запрос к API OpenWeatherMap
-        const response = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather`,
-          {
-            params: {
-              lat: city.lat,
-              lon: city.lon,
-              appid: "7dbb871250c80e49f8af51fb5af9c97e", // мой API key
-              units: "metric",
-              lang: "ru",
-            },
-          }
-        );
-        return { key, data: response.data };
-      });
+// Компонент для отображения погоды в каждом городе
+const WeatherCity: React.FC<IWeatherCityRules> = ({
+  city,
+  weatherData,
+  isLoading,
+}) => {
+  if (isLoading) {
+    return (
+      <div className="weather__item">
+        <h2 className="weather__label">{city.name}</h2>
+        <div className="weather__loading">Загрузка</div>
+      </div>
+    );
+  }
 
-      // Ожидание выполнения всех запросов
-      const results = await Promise.all(promises);
+  if (!weatherData) {
+    return (
+      <div className="weather__item">
+        <h2 className="weather__label">{city.name}</h2>
+        <div className="weather__error">Ошибка загрузки данных</div>
+      </div>
+    );
+  }
 
-      // Обновление состояния с полученными данными
-      const newWeatherData = { ...weatherData };
-      results.forEach((result) => {
-        newWeatherData[result.key as keyof typeof weatherData] = result.data;
-      });
-
-      setWeatherData(newWeatherData);
-      setLoading(false);
-    };
-
-    getWeatherData();
-  }, []);
-
-  // Формирование URL иконки погоды
+  // Функция для получения URL иконки погоды
   const getWeatherIcon = (iconCode: string) => {
     return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
   };
+
+  // Отображение данных о погоде для города
+  return (
+    <div className="weather__item">
+      <h2 className="weather__label">{city.name}</h2>
+      <div className="weather__content">
+        <img
+          className="weather__image"
+          src={getWeatherIcon(weatherData.weather[0].icon)}
+          alt={weatherData.weather[0].description}
+        />
+        <div className="weather__temperature">
+          {Math.round(weatherData.main.temp)}°C
+        </div>
+      </div>
+      <p className="weather__description">
+        {weatherData.weather[0].description}
+      </p>
+      <div className="weather__details">
+        <div className="weather__info">
+          Ощущается как {Math.round(weatherData.main.feels_like)}°C
+        </div>
+        <div className="weather__info">
+          Влажность: {weatherData.main.humidity}%
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Функция для получения данных о погоде через API
+const fetchWeatherData = async (city: ICity): Promise<IWeatherData> => {
+  const response = await fetch(
+    `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=7dbb871250c80e49f8af51fb5af9c97e&units=metric&lang=ru`
+  );
+  return response.json();
+};
+
+// Основной компонент
+const Weather: React.FC = () => {
+  const cities: ICity[] = React.useMemo(
+    () => [
+      { id: "beijing", name: "Пекин", lat: 39.9042, lon: 116.4074 },
+      { id: "guangzhou", name: "Гуанчжоу", lat: 23.1291, lon: 113.2644 },
+      { id: "harbin", name: "Харбин", lat: 45.8038, lon: 126.534 },
+    ],
+    []
+  );
+
+  // Параллельная загрузка данных по всем городам
+  const weatherQueries = useQueries({
+    queries: cities.map((city) => ({
+      queryKey: ["weather", city.id],
+      queryFn: () => fetchWeatherData(city),
+      staleTime: 10 * 60 * 1000, // актуальность данных - 10 минут
+      retry: 3, // Повторять запрос 3 раза при ошибке
+      refetchOnWindowFocus: false, // Не обновлять при просмотре окна
+    })),
+  });
+
+  // Объекты с данными для каждого города
+  const weatherData = React.useMemo(() => {
+    const data: Record<string, IWeatherData | null> = {};
+    cities.forEach((city, index) => {
+      data[city.id] = weatherQueries[index].data || null;
+    });
+    return data;
+  }, [cities, weatherQueries]);
+
+  // Объекты с состояниями загрузки для каждого города
+  const loadingStates = React.useMemo(() => {
+    const states: Record<string, boolean> = {};
+    cities.forEach((city, index) => {
+      states[city.id] = weatherQueries[index].isLoading;
+    });
+    return states;
+  }, [cities, weatherQueries]);
 
   return (
     <section className="weather">
       <h1 className="weather__title">Погода в городах Китая</h1>
       <div className="weather__list">
-        {weatherData.beijing && (
-          <div className="weather__item">
-            <h2 className="weather__label">{cities.beijing.name}</h2>
-            <div className="weather__content">
-              <img
-                className="weather__image"
-                src={getWeatherIcon(weatherData.beijing.weather[0].icon)}
-                alt={weatherData.beijing.weather[0].description}
-              />
-              <div className="weather__temperature">
-                {Math.round(weatherData.beijing.main.temp)}°C
-              </div>
-            </div>
-            <p className="weather__description">
-              {weatherData.beijing.weather[0].description}
-            </p>
-            <div className="weather__details">
-              <div className="weather__info">
-                Ощущается как {Math.round(weatherData.beijing.main.feels_like)}
-                °C
-              </div>
-              <div className="weather__info">
-                Влажность: {weatherData.beijing.main.humidity}%
-              </div>
-            </div>
-          </div>
-        )}
-
-        {weatherData.guangzhou && (
-          <div className="weather__item">
-            <h2 className="weather__label">{cities.guangzhou.name}</h2>
-            <div className="weather__content">
-              <img
-                className="weather__image"
-                src={getWeatherIcon(weatherData.guangzhou.weather[0].icon)}
-                alt={weatherData.guangzhou.weather[0].description}
-              />
-              <div className="weather__temperature">
-                {Math.round(weatherData.guangzhou.main.temp)}°C
-              </div>
-            </div>
-            <p className="weather__description">
-              {weatherData.guangzhou.weather[0].description}
-            </p>
-            <div className="weather__details">
-              <div className="weather__info">
-                Ощущается как{" "}
-                {Math.round(weatherData.guangzhou.main.feels_like)}
-                °C
-              </div>
-              <div className="weather__info">
-                Влажность: {weatherData.guangzhou.main.humidity}%
-              </div>
-            </div>
-          </div>
-        )}
-
-        {weatherData.harbin && (
-          <div className="weather__item">
-            <h2 className="weather__label">{cities.harbin.name}</h2>
-            <div className="weather__content">
-              <img
-                className="weather__image"
-                src={getWeatherIcon(weatherData.harbin.weather[0].icon)}
-                alt={weatherData.harbin.weather[0].description}
-              />
-              <div className="weather__temperature">
-                {Math.round(weatherData.harbin.main.temp)}°C
-              </div>
-            </div>
-            <p className="weather__description">
-              {weatherData.harbin.weather[0].description}
-            </p>
-            <div className="weather__details">
-              <div className="weather__info">
-                Ощущается как {Math.round(weatherData.harbin.main.feels_like)}
-                °C
-              </div>
-              <div className="weather__info">
-                Влажность: {weatherData.harbin.main.humidity}%
-              </div>
-            </div>
-          </div>
-        )}
+        {cities.map((city) => (
+          <WeatherCity
+            key={city.id}
+            city={city}
+            weatherData={weatherData[city.id] || null}
+            isLoading={loadingStates[city.id] || false}
+          />
+        ))}
       </div>
     </section>
   );
 };
 
-export default Weather;
+// Настройки по умолчанию для всех запросов
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 3,
+      staleTime: 10 * 60 * 1000, // 10 минут
+    },
+  },
+});
+
+// Оборачиваем компонент в провайдер React Query
+const WeatherPage: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Weather />
+    </QueryClientProvider>
+  );
+};
+
+export default WeatherPage;
