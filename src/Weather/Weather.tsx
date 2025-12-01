@@ -121,7 +121,7 @@ const Weather: React.FC = () => {
     queries: cities.map((city) => ({
       queryKey: ["weather", city.id],
       queryFn: () => fetchWeatherData(city),
-      staleTime: 10 * 60 * 1000, // актуальность данных - 10 минут
+      staleTime: 600000, // актуальность данных - 10 минут
       retry: 3, // Повторять запрос 3 раза при ошибке
       refetchOnWindowFocus: false, // Не обновлять при просмотре окна
     })),
@@ -168,7 +168,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 3,
-      staleTime: 10 * 60 * 1000, // 10 минут
+      staleTime: 600000, // 10 минут
     },
   },
 });
