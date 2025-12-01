@@ -4,6 +4,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { createUseStyles } from "react-jss";
 import "./Weather.css";
 
 // Типы данных
@@ -39,12 +40,51 @@ interface IWeatherCityRules {
   isLoading: boolean;
 }
 
+// Стили для динамического изменения фона карточки
+const useStyles = createUseStyles({
+  weatherItem: ({ temp }: { temp?: number }) => {
+    // Цвет фона в зависимости от температуры
+    let backgroundColor = "rgba(255, 255, 255, 0.1)"; // Цвет по умолчанию
+
+    if (temp !== undefined) {
+      if (temp < -10) {
+        backgroundColor = "rgba(0, 126, 252, 0.25)";
+      } else if (temp < 0) {
+        backgroundColor = "rgba(93, 145, 240, 0.25)";
+      } else if (temp < 10) {
+        backgroundColor = "rgba(135, 189, 250, 0.25)";
+      } else if (temp < 20) {
+        backgroundColor = "rgba(176, 230, 214, 0.25)";
+      } else if (temp < 25) {
+        backgroundColor = "rgba(144, 238, 144, 0.25)";
+      } else if (temp < 30) {
+        backgroundColor = "rgba(255, 215, 0, 0.25)";
+      } else if (temp < 35) {
+        backgroundColor = "rgba(255, 165, 0, 0.25)";
+      } else {
+        backgroundColor = "rgba(255, 69, 0, 0.25)";
+      }
+    }
+
+    return {
+      background: backgroundColor,
+      transition: "background 0.5s ease-in-out",
+    };
+  },
+});
+
 // Компонент для отображения погоды в каждом городе
 const WeatherCity: React.FC<IWeatherCityRules> = ({
   city,
   weatherData,
   isLoading,
 }) => {
+  // Получение температуры
+  const temp = weatherData?.main.temp;
+
+  // Используем стили JSS
+  const classes = useStyles({ temp });
+
   if (isLoading) {
     return (
       <div className="weather__item">
@@ -70,7 +110,7 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
 
   // Отображение данных о погоде для города
   return (
-    <div className="weather__item">
+    <div className={`weather__item ${classes.weatherItem}`}>
       <h2 className="weather__label">{city.name}</h2>
       <div className="weather__content">
         <img
@@ -98,7 +138,7 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
 };
 
 // Функция для получения данных о погоде через API
-const fetchWeatherData = async (city: ICity): Promise<IWeatherData> => {
+const getWeatherData = async (city: ICity): Promise<IWeatherData> => {
   const response = await fetch(
     `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=7dbb871250c80e49f8af51fb5af9c97e&units=metric&lang=ru`
   );
@@ -120,7 +160,7 @@ const Weather: React.FC = () => {
   const weatherQueries = useQueries({
     queries: cities.map((city) => ({
       queryKey: ["weather", city.id],
-      queryFn: () => fetchWeatherData(city),
+      queryFn: () => getWeatherData(city),
       staleTime: 600000, // актуальность данных - 10 минут
       retry: 3, // Повторять запрос 3 раза при ошибке
       refetchOnWindowFocus: false, // Не обновлять при просмотре окна

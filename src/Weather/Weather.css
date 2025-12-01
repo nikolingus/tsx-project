@@ -1,6 +1,5 @@
 .weather {
   padding: 60px 0;
-  background-color: rgb(219, 205, 187);
   color: rgb(0, 0, 0);
 }
 
@@ -53,7 +52,6 @@
 .weather__description {
   font-size: 1.1rem;
   margin-bottom: 20px;
-  text-transform: capitalize;
 }
 
 .weather__details {
