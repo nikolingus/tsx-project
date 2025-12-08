@@ -224,8 +224,8 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus:
         import.meta.env.VITE_QUERY_REFETCH_ON_WINDOW_FOCUS === "true",
-      retry: parseInt(import.meta.env.VITE_QUERY_RETRY || "3"),
-      staleTime: parseInt(import.meta.env.VITE_QUERY_STALE_TIME || "600000"),
+      retry: parseInt(import.meta.env.VITE_QUERY_RETRY),
+      staleTime: parseInt(import.meta.env.VITE_QUERY_STALE_TIME),
     },
   },
 });
