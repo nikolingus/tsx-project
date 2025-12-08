@@ -44,26 +44,25 @@ interface IWeatherCityRules {
 // Стили для динамического изменения фона карточки
 const useStyles = createUseStyles({
   weatherItem: ({ temp }: { temp?: number }) => {
-    // Цвет фона в зависимости от температуры
-    let backgroundColor = "rgba(255, 255, 255, 0.1)"; // Цвет по умолчанию
+    let backgroundColor = import.meta.env.VITE_COLOR_DEFAULT;
 
     if (temp !== undefined) {
-      if (temp < -10) {
-        backgroundColor = "rgba(0, 126, 252, 0.25)";
-      } else if (temp < 0) {
-        backgroundColor = "rgba(93, 145, 240, 0.25)";
-      } else if (temp < 10) {
-        backgroundColor = "rgba(135, 189, 250, 0.25)";
-      } else if (temp < 20) {
-        backgroundColor = "rgba(176, 230, 214, 0.25)";
-      } else if (temp < 25) {
-        backgroundColor = "rgba(144, 238, 144, 0.25)";
-      } else if (temp < 30) {
-        backgroundColor = "rgba(255, 215, 0, 0.25)";
-      } else if (temp < 35) {
-        backgroundColor = "rgba(255, 165, 0, 0.25)";
+      if (temp < parseFloat(import.meta.env.VITE_TEMP_1)) {
+        backgroundColor = import.meta.env.VITE_COLOR_VERY_COLD;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_2)) {
+        backgroundColor = import.meta.env.VITE_COLOR_COLD;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_3)) {
+        backgroundColor = import.meta.env.VITE_COLOR_COOL;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_4)) {
+        backgroundColor = import.meta.env.VITE_COLOR_MILD;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_5)) {
+        backgroundColor = import.meta.env.VITE_COLOR_WARM;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_6)) {
+        backgroundColor = import.meta.env.VITE_COLOR_HOT;
+      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_7)) {
+        backgroundColor = import.meta.env.VITE_COLOR_VERY_HOT;
       } else {
-        backgroundColor = "rgba(255, 69, 0, 0.25)";
+        backgroundColor = import.meta.env.VITE_COLOR_EXTREME_HOT;
       }
     }
 
@@ -90,7 +89,9 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
     return (
       <div className="weather__item">
         <h2 className="weather__label">{city.name}</h2>
-        <div className="weather__loading">Загрузка</div>
+        <div className="weather__loading">
+          {import.meta.env.VITE_TEXT_LOADING}
+        </div>
       </div>
     );
   }
@@ -99,14 +100,14 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
     return (
       <div className="weather__item">
         <h2 className="weather__label">{city.name}</h2>
-        <div className="weather__error">Ошибка загрузки данных</div>
+        <div className="weather__error">{import.meta.env.VITE_TEXT_ERROR}</div>
       </div>
     );
   }
 
   // Функция для получения URL иконки погоды
   const getWeatherIcon = (iconCode: string) => {
-    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+    return `${import.meta.env.VITE_OPENWEATHER_ICON_URL}/${iconCode}@2x.png`;
   };
 
   // Отображение данных о погоде для города
@@ -128,10 +129,11 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
       </p>
       <div className="weather__details">
         <div className="weather__info">
-          Ощущается как {Math.round(weatherData.main.feels_like)}°C
+          {import.meta.env.VITE_TEXT_FEELS_LIKE}{" "}
+          {Math.round(weatherData.main.feels_like)}°C
         </div>
         <div className="weather__info">
-          Влажность: {weatherData.main.humidity}%
+          {import.meta.env.VITE_TEXT_HUMIDITY}: {weatherData.main.humidity}%
         </div>
       </div>
     </div>
@@ -141,14 +143,14 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
 // Функция для получения данных о погоде через API
 const getWeatherData = async (city: ICity): Promise<IWeatherData> => {
   const response = await axios.get<IWeatherData>(
-    `https://api.openweathermap.org/data/2.5/weather`,
+    `${import.meta.env.VITE_OPENWEATHER_URL}/weather`,
     {
       params: {
         lat: city.lat,
         lon: city.lon,
-        appid: "7dbb871250c80e49f8af51fb5af9c97e",
-        units: "metric",
-        lang: "ru",
+        appid: import.meta.env.VITE_OPENWEATHER_API_KEY,
+        units: import.meta.env.VITE_TEMP_UNITS,
+        lang: import.meta.env.VITE_LANGUAGE,
       },
     }
   );
@@ -157,23 +159,27 @@ const getWeatherData = async (city: ICity): Promise<IWeatherData> => {
 
 // Основной компонент
 const Weather: React.FC = () => {
-  const cities: ICity[] = React.useMemo(
-    () => [
-      { id: "beijing", name: "Пекин", lat: 39.9042, lon: 116.4074 },
-      { id: "guangzhou", name: "Гуанчжоу", lat: 23.1291, lon: 113.2644 },
-      { id: "harbin", name: "Харбин", lat: 45.8038, lon: 126.534 },
-    ],
-    []
-  );
+  const cities: ICity[] = React.useMemo(() => {
+    const citiesString = import.meta.env.VITE_CITIES;
+    return citiesString.split(",").map((cityStr: string) => {
+      const [id, name, lat, lon] = cityStr.split(":");
+      return {
+        id,
+        name,
+        lat: parseFloat(lat),
+        lon: parseFloat(lon),
+      };
+    });
+  }, []);
 
   // Параллельная загрузка данных по всем городам
   const weatherQueries = useQueries({
     queries: cities.map((city) => ({
       queryKey: ["weather", city.id],
       queryFn: () => getWeatherData(city),
-      staleTime: 600000, // актуальность данных - 10 минут
-      retry: 3, // Повторять запрос 3 раза при ошибке
-      refetchOnWindowFocus: false, // Не обновлять при просмотре окна
+      staleTime: parseInt(import.meta.env.VITE_QUERY_STALE_TIME),
+      retry: parseInt(import.meta.env.VITE_QUERY_RETRY),
+      refetchOnWindowFocus: import.meta.env.VITE_QUERY_FOCUS === "true",
     })),
   });
 
@@ -197,7 +203,7 @@ const Weather: React.FC = () => {
 
   return (
     <section className="weather">
-      <h1 className="weather__title">Погода в городах Китая</h1>
+      <h1 className="weather__title">{import.meta.env.VITE_SEC_TITLE}</h1>
       <div className="weather__list">
         {cities.map((city) => (
           <WeatherCity
@@ -216,9 +222,10 @@ const Weather: React.FC = () => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      retry: 3,
-      staleTime: 600000, // 10 минут
+      refetchOnWindowFocus:
+        import.meta.env.VITE_QUERY_REFETCH_ON_WINDOW_FOCUS === "true",
+      retry: parseInt(import.meta.env.VITE_QUERY_RETRY || "3"),
+      staleTime: parseInt(import.meta.env.VITE_QUERY_STALE_TIME || "600000"),
     },
   },
 });
