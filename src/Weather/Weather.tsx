@@ -44,25 +44,26 @@ interface IWeatherCityRules {
 // Стили для динамического изменения фона карточки
 const useStyles = createUseStyles({
   weatherItem: ({ temp }: { temp?: number }) => {
-    let backgroundColor = import.meta.env.VITE_COLOR_DEFAULT;
+    // Цвет фона в зависимости от температуры
+    let backgroundColor = "rgba(255, 255, 255, 0.1)"; // Цвет по умолчанию
 
     if (temp !== undefined) {
-      if (temp < parseFloat(import.meta.env.VITE_TEMP_1)) {
-        backgroundColor = import.meta.env.VITE_COLOR_VERY_COLD;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_2)) {
-        backgroundColor = import.meta.env.VITE_COLOR_COLD;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_3)) {
-        backgroundColor = import.meta.env.VITE_COLOR_COOL;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_4)) {
-        backgroundColor = import.meta.env.VITE_COLOR_MILD;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_5)) {
-        backgroundColor = import.meta.env.VITE_COLOR_WARM;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_6)) {
-        backgroundColor = import.meta.env.VITE_COLOR_HOT;
-      } else if (temp < parseFloat(import.meta.env.VITE_TEMP_7)) {
-        backgroundColor = import.meta.env.VITE_COLOR_VERY_HOT;
+      if (temp < -10) {
+        backgroundColor = "rgba(0, 126, 252, 0.25)";
+      } else if (temp < 0) {
+        backgroundColor = "rgba(93, 145, 240, 0.25)";
+      } else if (temp < 10) {
+        backgroundColor = "rgba(135, 189, 250, 0.25)";
+      } else if (temp < 20) {
+        backgroundColor = "rgba(176, 230, 214, 0.25)";
+      } else if (temp < 25) {
+        backgroundColor = "rgba(144, 238, 144, 0.25)";
+      } else if (temp < 30) {
+        backgroundColor = "rgba(255, 215, 0, 0.25)";
+      } else if (temp < 35) {
+        backgroundColor = "rgba(255, 165, 0, 0.25)";
       } else {
-        backgroundColor = import.meta.env.VITE_COLOR_EXTREME_HOT;
+        backgroundColor = "rgba(255, 69, 0, 0.25)";
       }
     }
 
@@ -89,9 +90,7 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
     return (
       <div className="weather__item">
         <h2 className="weather__label">{city.name}</h2>
-        <div className="weather__loading">
-          {import.meta.env.VITE_TEXT_LOADING}
-        </div>
+        <div className="weather__loading">Загрузка</div>
       </div>
     );
   }
@@ -100,7 +99,7 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
     return (
       <div className="weather__item">
         <h2 className="weather__label">{city.name}</h2>
-        <div className="weather__error">{import.meta.env.VITE_TEXT_ERROR}</div>
+        <div className="weather__error">Ошибка загрузки данных</div>
       </div>
     );
   }
@@ -129,11 +128,10 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
       </p>
       <div className="weather__details">
         <div className="weather__info">
-          {import.meta.env.VITE_TEXT_FEELS_LIKE}{" "}
-          {Math.round(weatherData.main.feels_like)}°C
+          Ощущается как {Math.round(weatherData.main.feels_like)}°C
         </div>
         <div className="weather__info">
-          {import.meta.env.VITE_TEXT_HUMIDITY}: {weatherData.main.humidity}%
+          Влажность: {weatherData.main.humidity}%
         </div>
       </div>
     </div>
@@ -159,18 +157,14 @@ const getWeatherData = async (city: ICity): Promise<IWeatherData> => {
 
 // Основной компонент
 const Weather: React.FC = () => {
-  const cities: ICity[] = React.useMemo(() => {
-    const citiesString = import.meta.env.VITE_CITIES;
-    return citiesString.split(",").map((cityStr: string) => {
-      const [id, name, lat, lon] = cityStr.split(":");
-      return {
-        id,
-        name,
-        lat: parseFloat(lat),
-        lon: parseFloat(lon),
-      };
-    });
-  }, []);
+  const cities: ICity[] = React.useMemo(
+    () => [
+      { id: "beijing", name: "Пекин", lat: 39.9042, lon: 116.4074 },
+      { id: "guangzhou", name: "Гуанчжоу", lat: 23.1291, lon: 113.2644 },
+      { id: "harbin", name: "Харбин", lat: 45.8038, lon: 126.534 },
+    ],
+    []
+  );
 
   // Параллельная загрузка данных по всем городам
   const weatherQueries = useQueries({
@@ -203,7 +197,7 @@ const Weather: React.FC = () => {
 
   return (
     <section className="weather">
-      <h1 className="weather__title">{import.meta.env.VITE_SEC_TITLE}</h1>
+      <h1 className="weather__title">Погода в Китае</h1>
       <div className="weather__list">
         {cities.map((city) => (
           <WeatherCity
@@ -222,8 +216,7 @@ const Weather: React.FC = () => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus:
-        import.meta.env.VITE_QUERY_REFETCH_ON_WINDOW_FOCUS === "true",
+      refetchOnWindowFocus: import.meta.env.VITE_QUERY_FOCUS === "true",
       retry: parseInt(import.meta.env.VITE_QUERY_RETRY),
       staleTime: parseInt(import.meta.env.VITE_QUERY_STALE_TIME),
     },
