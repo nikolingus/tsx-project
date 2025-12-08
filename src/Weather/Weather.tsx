@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { createUseStyles } from "react-jss";
 import "./Weather.css";
+import axios from "axios";
 
 // Типы данных
 interface IMainData {
@@ -139,10 +140,19 @@ const WeatherCity: React.FC<IWeatherCityRules> = ({
 
 // Функция для получения данных о погоде через API
 const getWeatherData = async (city: ICity): Promise<IWeatherData> => {
-  const response = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=7dbb871250c80e49f8af51fb5af9c97e&units=metric&lang=ru`
+  const response = await axios.get<IWeatherData>(
+    `https://api.openweathermap.org/data/2.5/weather`,
+    {
+      params: {
+        lat: city.lat,
+        lon: city.lon,
+        appid: "7dbb871250c80e49f8af51fb5af9c97e",
+        units: "metric",
+        lang: "ru",
+      },
+    }
   );
-  return response.json();
+  return response.data;
 };
 
 // Основной компонент
