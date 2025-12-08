@@ -1,20 +1,60 @@
 import React from "react";
 import "./Header.css";
 
+// Типы данных
+interface IHeaderData {
+  href: string;
+  title: string;
+}
+
+// Основной компонент
 const Header: React.FC = () => {
+  // Левая группа
+  const leftGroup: IHeaderData[] = React.useMemo(
+    () => [
+      {
+        href: "#about",
+        title: "О нас",
+      },
+      {
+        href: "#adv",
+        title: "Преимущества",
+      },
+      {
+        href: "#rev",
+        title: "Отзывы",
+      },
+    ],
+    []
+  );
+
+  // Правая группа
+  const rightGroup: IHeaderData[] = React.useMemo(
+    () => [
+      {
+        href: "#tours",
+        title: "Туры",
+      },
+      {
+        href: "#order",
+        title: "Заказать тур",
+      },
+      {
+        href: "#map",
+        title: "Офис",
+      },
+    ],
+    []
+  );
   return (
     <header className="header">
       <nav className="nav">
         <div className="nav__group nav__group--left">
-          <a href="#about" className="nav__link">
-            О нас
-          </a>
-          <a href="#adv" className="nav__link">
-            Преимущества
-          </a>
-          <a href="#rev" className="nav__link">
-            Отзывы
-          </a>
+          {leftGroup.map((text, index) => (
+            <a href={text.href} className="nav__link" key={index}>
+              {text.title}
+            </a>
+          ))}
         </div>
 
         <div className="nav__logo">
@@ -22,15 +62,11 @@ const Header: React.FC = () => {
         </div>
 
         <div className="nav__group nav__group--right">
-          <a href="#tours" className="nav__link">
-            Туры
-          </a>
-          <a href="#order" className="nav__link">
-            Заказать тур
-          </a>
-          <a href="#map" className="nav__link">
-            Офис
-          </a>
+          {rightGroup.map((text, index) => (
+            <a href={text.href} className="nav__link" key={index}>
+              {text.title}
+            </a>
+          ))}
         </div>
       </nav>
     </header>
