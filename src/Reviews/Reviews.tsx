@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Reviews.css";
 
-interface Review {
+interface IReviews {
   text: string;
   name: string;
   photo: string;
@@ -10,7 +10,7 @@ interface Review {
 const Reviews: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-  const reviewsItems: Review[] = [
+  const reviewsItems: IReviews[] = [
     {
       text: "Получил огромное удовольствие от увлекательной поездки в Харбин. Особенно запомнились большие ледяные скульптуры.",
       name: "Сергей Т.",
