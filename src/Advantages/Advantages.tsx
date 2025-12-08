@@ -44,11 +44,7 @@ const Advantages: React.FC = () => {
       <div className="advantages__list">
         {advantages.map((advantage, index) => (
           <div className="advantages__item" key={index}>
-            <img
-              className="advantages__image"
-              src={advantage.image}
-              alt={advantage.subtitle}
-            />
+            <img className="advantages__image" src={advantage.image} />
             <div className="advantages__content">
               <h3 className="advantages__subtitle">{advantage.subtitle}</h3>
               <p className="advantages__text">{advantage.text}</p>
