@@ -2,7 +2,10 @@ import React from "react";
 import "./Footer.css";
 
 const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();
+  const currentYear: number = React.useMemo(
+    () => new Date().getFullYear(),
+    [new Date().getFullYear()]
+  );
 
   return (
     <footer className="footer">
