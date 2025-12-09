@@ -1,10 +1,5 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  ChangeEvent,
-  FormEvent,
-} from "react";
+import React, { useRef, useState, useEffect } from "react";
+import type { FormEvent, ChangeEvent } from "react";
 import emailjs from "@emailjs/browser";
 import "./Registration.css";
 
@@ -362,7 +357,7 @@ const Registration: React.FC = () => {
           className="registration__button"
           disabled={isLoading || !isFormValid}
         >
-          {isLoading ? "Отправка..." : "Отправить заявку"}
+          {isLoading ? "Отправка" : "Отправить заявку"}
         </button>
       </form>
 
