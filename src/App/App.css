@@ -236,6 +236,10 @@
   .slider__btn--next {
     right: 5px !important;
   }
+  .reviews {
+    height: 80vh;
+    margin-top: 0vh;
+  }
 }
 
 @media screen and (max-width: 420px) {

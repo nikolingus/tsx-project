@@ -1,6 +1,7 @@
 /* Видео */
 .video {
   margin-top: 10vh;
+  margin-bottom: 10vh;
 }
 .video__frame {
   width: 1000px;

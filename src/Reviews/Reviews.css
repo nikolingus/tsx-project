@@ -1,11 +1,13 @@
 /* Обзоры */
 .reviews {
+  margin-top: 3vh;
   padding: 60px 0;
   text-align: center;
-  height: 80vh;
+  height: 45vh;
 }
 
 .reviews__title {
+  margin-bottom: 5vh;
   font-size: 32px;
   color: #333;
 }
