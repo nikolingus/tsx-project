@@ -1,35 +1,27 @@
 import React from "react";
-import Advantages from "../Advantages/Advantages";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
-import Gallery from "../Gallery/Gallery";
-import Title from "../Title/Title";
-import Tours from "../Tours/Tours";
-import Slider from "../Slider/Slider";
-import Video from "../Video/Video";
-import Reviews from "../Reviews/Reviews";
-import Registration from "../Registration/Registration";
-import Map from "../Map/Map";
-import Weather from "../Weather/Weather";
-
+import MainPage from "../pages/MainPage";
+import ToursPage from "../pages/ToursPage";
+import OrderPage from "../pages/OrderPage";
+import RevPage from "../pages/RevPage";
 import "./App.css";
 
 const App: React.FC = () => {
   return (
-    <div>
+    <BrowserRouter>
       <Header />
-      <Title />
-      <Gallery />
-      <Tours />
-      <Weather />
-      <Slider />
-      <Video />
-      <Advantages />
-      <Reviews />
-      <Registration />
-      <Map />
+      <main>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/tours" element={<ToursPage />} />
+          <Route path="/order" element={<OrderPage />} />
+          <Route path="/reviews" element={<RevPage />} />
+        </Routes>
+      </main>
       <Footer />
-    </div>
+    </BrowserRouter>
   );
 };
 

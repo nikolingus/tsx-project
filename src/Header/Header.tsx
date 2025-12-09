@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./Header.css";
 
 // Типы данных
@@ -13,15 +14,11 @@ const Header: React.FC = () => {
   const leftGroup: IHeaderData[] = React.useMemo(
     () => [
       {
-        href: "#about",
-        title: "О нас",
+        href: "/",
+        title: "Главная",
       },
       {
-        href: "#adv",
-        title: "Преимущества",
-      },
-      {
-        href: "#rev",
+        href: "/reviews",
         title: "Отзывы",
       },
     ],
@@ -32,28 +29,25 @@ const Header: React.FC = () => {
   const rightGroup: IHeaderData[] = React.useMemo(
     () => [
       {
-        href: "#tours",
+        href: "/tours",
         title: "Туры",
       },
       {
-        href: "#order",
+        href: "/order",
         title: "Заказать тур",
-      },
-      {
-        href: "#map",
-        title: "Офис",
       },
     ],
     []
   );
+
   return (
     <header className="header">
       <nav className="nav">
         <div className="nav__group nav__group--left">
-          {leftGroup.map((text, index) => (
-            <a href={text.href} className="nav__link" key={index}>
-              {text.title}
-            </a>
+          {leftGroup.map((item, index) => (
+            <Link to={item.href} className="nav__link" key={index}>
+              {item.title}
+            </Link>
           ))}
         </div>
 
@@ -62,10 +56,10 @@ const Header: React.FC = () => {
         </div>
 
         <div className="nav__group nav__group--right">
-          {rightGroup.map((text, index) => (
-            <a href={text.href} className="nav__link" key={index}>
-              {text.title}
-            </a>
+          {rightGroup.map((item, index) => (
+            <Link to={item.href} className="nav__link" key={index}>
+              {item.title}
+            </Link>
           ))}
         </div>
       </nav>
