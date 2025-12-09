@@ -3,14 +3,14 @@ import type { FormEvent, ChangeEvent } from "react";
 import emailjs from "@emailjs/browser";
 import "./Registration.css";
 
-// Интерфейсы для типизации состояний
-interface FieldErrors {
+// Типы данных
+interface IFieldErrors {
   email: string;
   name: string;
   phone: string;
 }
 
-interface TouchedFields {
+interface ITouchedFields {
   email: boolean;
   name: boolean;
   phone: boolean;
@@ -31,12 +31,12 @@ const Registration: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false); // Загрузка отправки
   const [message, setMessage] = useState<string>(""); // Сообщение для уведомления
   const [isFormValid, setIsFormValid] = useState<boolean>(false); // Валидность всей формы
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
+  const [fieldErrors, setFieldErrors] = useState<IFieldErrors>({
     email: "",
     name: "",
     phone: "",
   }); // Ошибки валидации для каждого поля
-  const [touchedFields, setTouchedFields] = useState<TouchedFields>({
+  const [touchedFields, setTouchedFields] = useState<ITouchedFields>({
     email: false,
     name: false,
     phone: false,
