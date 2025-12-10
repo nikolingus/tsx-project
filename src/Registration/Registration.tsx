@@ -152,10 +152,7 @@ const Registration: React.FC = () => {
   // Основной обработчик отправки формы с типизацией события
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault(); // Предотвращаем стандартное поведение формы
-
-    // Подсвечиваем все незаполненные обязательные поля
-    showEmptyFields();
-
+    showEmptyFields(); // Подсвечиваем все незаполненные обязательные поля
     setIsLoading(true); // Включаем состояние загрузки
     setMessage(""); // Сбрасываем предыдущие сообщения
 
