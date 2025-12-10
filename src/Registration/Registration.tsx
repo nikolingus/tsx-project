@@ -69,6 +69,17 @@ const Registration: React.FC = () => {
     return "";
   };
 
+  // Функция для подсветки всех незаполненных обязательных полей
+  const showEmptyFields = (): void => {
+    const newTouchedFields: TouchedFields = {
+      email: true,
+      name: true,
+      phone: true,
+      message: false, // Пожелание необязательно
+    };
+    setTouchedFields(newTouchedFields);
+  };
+
   // Обработчик изменения поля с типизацией параметров
   const handleFieldChange = (fieldName: FormField, value: string): void => {
     // Обновляем значение поля в состоянии
@@ -141,16 +152,12 @@ const Registration: React.FC = () => {
   // Основной обработчик отправки формы с типизацией события
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault(); // Предотвращаем стандартное поведение формы
+
+    // Подсвечиваем все незаполненные обязательные поля
+    showEmptyFields();
+
     setIsLoading(true); // Включаем состояние загрузки
     setMessage(""); // Сбрасываем предыдущие сообщения
-
-    // Отображение ошибки, если пользователь попытается отправить пустую форму
-    setTouchedFields((prev) => ({
-      ...prev,
-      email: true,
-      name: true,
-      phone: true,
-    }));
 
     // Финальная проверка перед отправкой
     const { email, name, phone } = formData;
@@ -167,14 +174,12 @@ const Registration: React.FC = () => {
         name: nameError,
         phone: phoneError,
       }));
-      setMessage("error");
       setIsLoading(false);
       return;
     }
 
     // Дополнительная проверка на валидность формы
     if (!isFormValid) {
-      setMessage("error");
       setIsLoading(false);
       return;
     }
@@ -284,7 +289,6 @@ const Registration: React.FC = () => {
               }`}
               type="email"
               placeholder="Ваша электронная почта"
-              required
               value={formData.email}
               onChange={handleInputChange("email")}
               onBlur={handleInputBlur("email")}
@@ -305,7 +309,6 @@ const Registration: React.FC = () => {
               }`}
               type="text"
               placeholder="Ваше имя"
-              required
               value={formData.name}
               onChange={handleInputChange("name")}
               onBlur={handleInputBlur("name")}
@@ -325,7 +328,6 @@ const Registration: React.FC = () => {
               }`}
               type="tel"
               placeholder="Ваш номер телефона"
-              required
               value={formData.phone}
               onChange={handleInputChange("phone")}
               onBlur={handleInputBlur("phone")}
