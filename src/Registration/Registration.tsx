@@ -1,46 +1,48 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { FormEvent, ChangeEvent } from "react";
 import emailjs from "@emailjs/browser";
 import "./Registration.css";
 
 // Типы данных
-interface IFieldErrors {
+interface IFormData {
   email: string;
   name: string;
   phone: string;
+  message: string;
 }
 
-interface ITouchedFields {
-  email: boolean;
-  name: boolean;
-  phone: boolean;
-}
+// Тип для всех полей формы
+type FormField = keyof IFormData;
 
-// Тип для имен полей формы
-type FieldName = "email" | "name" | "phone";
+// Типы для ошибок
+type FieldErrors = Record<FormField, string>;
+type TouchedFields = Record<FormField, boolean>;
 
 const Registration: React.FC = () => {
-  // Создаем типизированные ссылки на DOM-элементы полей формы
-  const formRef = useRef<HTMLFormElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
-  const phoneRef = useRef<HTMLInputElement>(null);
-  const messageRef = useRef<HTMLTextAreaElement>(null);
-
-  // Состояния компонента с явной типизацией
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Загрузка отправки
-  const [message, setMessage] = useState<string>(""); // Сообщение для уведомления
-  const [isFormValid, setIsFormValid] = useState<boolean>(false); // Валидность всей формы
-  const [fieldErrors, setFieldErrors] = useState<IFieldErrors>({
+  // Состояние для данных формы
+  const [formData, setFormData] = useState<IFormData>({
     email: "",
     name: "",
     phone: "",
-  }); // Ошибки валидации для каждого поля
-  const [touchedFields, setTouchedFields] = useState<ITouchedFields>({
+    message: "",
+  });
+
+  // Состояния компонента с явной типизацией
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
+    email: "",
+    name: "",
+    phone: "",
+    message: "",
+  });
+  const [touchedFields, setTouchedFields] = useState<TouchedFields>({
     email: false,
     name: false,
     phone: false,
-  }); // Отслеживание полей, редактируемых пользователем
+    message: false,
+  });
 
   // Валидация email с типизацией
   const validateEmail = (email: string): string => {
@@ -68,7 +70,13 @@ const Registration: React.FC = () => {
   };
 
   // Обработчик изменения поля с типизацией параметров
-  const handleFieldChange = (fieldName: FieldName, value: string): void => {
+  const handleFieldChange = (fieldName: FormField, value: string): void => {
+    // Обновляем значение поля в состоянии
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+
     // Помечаем поле как редактируемое
     if (!touchedFields[fieldName]) {
       setTouchedFields((prev) => ({
@@ -103,11 +111,9 @@ const Registration: React.FC = () => {
   // Валидация всей формы с типизацией
   useEffect(() => {
     const checkFormValidity = (): void => {
-      const email = emailRef.current?.value?.trim() || "";
-      const name = nameRef.current?.value?.trim() || "";
-      const phone = phoneRef.current?.value?.trim() || "";
+      const { email, name, phone } = formData;
 
-      // Форма валидна если все поля заполнены и нет ошибок валидации
+      // Форма валидна, если все обязательные поля заполнены и нет ошибок валидации
       const isValid =
         email &&
         name &&
@@ -118,29 +124,9 @@ const Registration: React.FC = () => {
       setIsFormValid(!!isValid);
     };
 
-    // Получаем все input с типизацией
-    const inputs: (HTMLInputElement | HTMLTextAreaElement | null)[] = [
-      emailRef.current,
-      nameRef.current,
-      phoneRef.current,
-      messageRef.current,
-    ];
-
-    // Добавляем обработчики на каждое поле
-    inputs.forEach((input) => {
-      input?.addEventListener("input", checkFormValidity);
-    });
-
-    // Первоначальная проверка при загрузке
+    // Вызываем проверку при изменении данных формы
     checkFormValidity();
-
-    // Удаляем обработчики при размонтировании
-    return () => {
-      inputs.forEach((input) => {
-        input?.removeEventListener("input", checkFormValidity);
-      });
-    };
-  }, []);
+  }, [formData]);
 
   // Автоматическое скрытие уведомления через 5 секунд
   useEffect(() => {
@@ -159,16 +145,15 @@ const Registration: React.FC = () => {
     setMessage(""); // Сбрасываем предыдущие сообщения
 
     // Отображение ошибки, если пользователь попытается отправить пустую форму
-    setTouchedFields({
+    setTouchedFields((prev) => ({
+      ...prev,
       email: true,
       name: true,
       phone: true,
-    });
+    }));
 
-    // Финальная проверка перед отправкой с типизацией
-    const email = emailRef.current?.value?.trim() || "";
-    const name = nameRef.current?.value?.trim() || "";
-    const phone = phoneRef.current?.value?.trim() || "";
+    // Финальная проверка перед отправкой
+    const { email, name, phone } = formData;
 
     const emailError = validateEmail(email);
     const nameError = validateName(name);
@@ -176,11 +161,12 @@ const Registration: React.FC = () => {
 
     // Если есть ошибки валидации - показываем ошибку и прерываем отправку
     if (emailError || nameError || phoneError) {
-      setFieldErrors({
+      setFieldErrors((prev) => ({
+        ...prev,
         email: emailError,
         name: nameError,
         phone: phoneError,
-      });
+      }));
       setMessage("error");
       setIsLoading(false);
       return;
@@ -194,18 +180,18 @@ const Registration: React.FC = () => {
     }
 
     try {
-      // Параметры для отправки через EmailJS с типизацией
+      // Параметры для отправки через EmailJS
       const templateParams = {
-        user_name: nameRef.current?.value?.trim() || "",
-        user_email: emailRef.current?.value?.trim() || "",
-        user_phone: phoneRef.current?.value?.trim() || "",
-        user_message: messageRef.current?.value?.trim() || "Не указано", // Запасное значение для пустого сообщения
-        date: new Date().toLocaleString("ru-RU"), // Текущая дата в российском формате
+        user_name: formData.name,
+        user_email: formData.email,
+        user_phone: formData.phone,
+        user_message: formData.message || "Не указано",
+        date: new Date().toLocaleString("ru-RU"),
       };
 
       console.log("Отправляемые параметры:", templateParams);
 
-      // Отправка письма через EmailJS сервис с типизацией
+      // Отправка письма через EmailJS сервис
       const result = await emailjs.send(
         "service_ok2hqod", // ID сервиса в EmailJS
         "template_jfsxfsx", // ID шаблона в EmailJS
@@ -214,29 +200,40 @@ const Registration: React.FC = () => {
       );
 
       console.log("Сообщение отправлено:", result);
-      setMessage("success"); // Показываем успешное уведомление
-      clearForm(); // Очищаем форму после успешной отправки
+      setMessage("success");
+      clearForm();
     } catch (error) {
-      // Обработка ошибок отправки с типизацией
       console.error("Ошибка отправки:", error);
-      setMessage("error"); // Показываем уведомление об ошибке
+      setMessage("error");
     } finally {
-      // Выключаем состояние загрузки в любом случае
       setIsLoading(false);
     }
   };
 
-  // Очистка формы с типизацией
+  // Очистка формы
   const clearForm = (): void => {
-    [emailRef, nameRef, phoneRef, messageRef].forEach((ref) => {
-      if (ref.current) ref.current.value = "";
+    setFormData({
+      email: "",
+      name: "",
+      phone: "",
+      message: "",
     });
     setIsFormValid(false);
-    setFieldErrors({ email: "", name: "", phone: "" });
-    setTouchedFields({ email: false, name: false, phone: false });
+    setFieldErrors({
+      email: "",
+      name: "",
+      phone: "",
+      message: "",
+    });
+    setTouchedFields({
+      email: false,
+      name: false,
+      phone: false,
+      message: false,
+    });
   };
 
-  // Функция для получения текста уведомления с типизацией
+  // Функция для получения текста уведомления
   const getNotificationText = (): string => {
     return message === "success"
       ? "Заявка успешно отправлена!"
@@ -245,15 +242,15 @@ const Registration: React.FC = () => {
 
   // Обработчик изменения input с типизацией события
   const handleInputChange =
-    (fieldName: FieldName) =>
-    (e: ChangeEvent<HTMLInputElement>): void => {
+    (fieldName: FormField) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
       handleFieldChange(fieldName, e.target.value);
     };
 
-  // Обработчик события, когда пользователь убрал курсор, с типизацией
+  // Обработчик события, когда пользователь убрал курсор
   const handleInputBlur =
-    (fieldName: FieldName) =>
-    (e: ChangeEvent<HTMLInputElement>): void => {
+    (fieldName: FormField) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
       handleFieldChange(fieldName, e.target.value);
     };
 
@@ -275,16 +272,11 @@ const Registration: React.FC = () => {
       <h1 className="registration__title">Регистрация</h1>
 
       {/* Основная форма с типизированными обработчиками */}
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit}
-        className="registration__form"
-      >
+      <form onSubmit={handleSubmit} className="registration__form">
         <ul className="registration__list">
           <li className="registration__item">
             <p className="registration__label">Электронная почта</p>
             <input
-              ref={emailRef}
               className={`registration__input ${
                 touchedFields.email && fieldErrors.email
                   ? "registration__input--error"
@@ -293,6 +285,7 @@ const Registration: React.FC = () => {
               type="email"
               placeholder="Ваша электронная почта"
               required
+              value={formData.email}
               onChange={handleInputChange("email")}
               onBlur={handleInputBlur("email")}
             />
@@ -305,7 +298,6 @@ const Registration: React.FC = () => {
           <li className="registration__item">
             <p className="registration__label">Имя</p>
             <input
-              ref={nameRef}
               className={`registration__input ${
                 touchedFields.name && fieldErrors.name
                   ? "registration__input--error"
@@ -314,6 +306,7 @@ const Registration: React.FC = () => {
               type="text"
               placeholder="Ваше имя"
               required
+              value={formData.name}
               onChange={handleInputChange("name")}
               onBlur={handleInputBlur("name")}
             />
@@ -325,7 +318,6 @@ const Registration: React.FC = () => {
           <li className="registration__item">
             <p className="registration__label">Номер телефона</p>
             <input
-              ref={phoneRef}
               className={`registration__input ${
                 touchedFields.phone && fieldErrors.phone
                   ? "registration__input--error"
@@ -334,6 +326,7 @@ const Registration: React.FC = () => {
               type="tel"
               placeholder="Ваш номер телефона"
               required
+              value={formData.phone}
               onChange={handleInputChange("phone")}
               onBlur={handleInputBlur("phone")}
             />
@@ -345,17 +338,22 @@ const Registration: React.FC = () => {
           <li className="registration__item">
             <p className="registration__label">Пожелания</p>
             <textarea
-              ref={messageRef}
               className="registration__input registration__input-wishes"
               placeholder="Ваши пожелания (необязательно)"
+              value={formData.message}
+              onChange={handleInputChange("message")}
+              onBlur={handleInputBlur("message")}
             ></textarea>
+            {touchedFields.message && fieldErrors.message && (
+              <span className="registration__error">{fieldErrors.message}</span>
+            )}
           </li>
         </ul>
 
         <button
           type="submit"
           className="registration__button"
-          disabled={isLoading || !isFormValid}
+          disabled={isLoading}
         >
           {isLoading ? "Отправка" : "Отправить заявку"}
         </button>
