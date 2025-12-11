@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { FormEvent, ChangeEvent } from "react";
 import emailjs from "@emailjs/browser";
 import "./Registration.css";
@@ -30,7 +30,6 @@ const Registration: React.FC = () => {
   // Состояния компонента с явной типизацией
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
-  const [isFormValid, setIsFormValid] = useState<boolean>(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     email: "",
     name: "",
@@ -45,31 +44,57 @@ const Registration: React.FC = () => {
   });
 
   // Валидация email с типизацией
-  const validateEmail = (email: string): string => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validateEmail = useCallback((email: string): string => {
     if (!email) return "Email обязателен для заполнения";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return "Введите корректный email";
     return "";
-  };
+  }, []);
 
   // Валидация имени с типизацией
-  const validateName = (name: string): string => {
+  const validateName = useCallback((name: string): string => {
+    if (!name) return "Имя обязательно для заполнения";
     if (name[0] !== name[0].toUpperCase())
       return "Имя должно начинаться с заглавной буквы";
-    if (!name) return "Имя обязательно для заполнения";
     if (name.length < 2) return "Имя должно содержать минимум 2 символа";
     if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(name))
       return "Имя может содержать только буквы, пробелы и дефисы";
     return "";
-  };
+  }, []);
 
   // Валидация телефона с типизацией
-  const validatePhone = (phone: string): string => {
-    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{11,13}$/;
+  const validatePhone = useCallback((phone: string): string => {
     if (!phone) return "Телефон обязателен для заполнения";
+    if (
+      (phone.startsWith("+7") && phone.length !== 12) ||
+      (phone[0] === "8" && phone.length !== 11) ||
+      (phone[0] !== "8" && !phone.startsWith("+7"))
+    )
+      return "Введите корректный номер телефона";
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{11,13}$/;
     if (!phoneRegex.test(phone)) return "Введите корректный номер телефона";
     return "";
-  };
+  }, []);
+
+  // Валидация всей формы
+  const validateForm = useCallback((): boolean => {
+    const { email, name, phone } = formData;
+    const emailError = validateEmail(email);
+    const nameError = validateName(name);
+    const phoneError = validatePhone(phone);
+    const hasErrors = !!(emailError || nameError || phoneError);
+
+    if (hasErrors) {
+      setFieldErrors({
+        email: emailError,
+        name: nameError,
+        phone: phoneError,
+        message: "",
+      });
+    }
+
+    return !hasErrors;
+  }, [formData, validateEmail, validateName, validatePhone]);
 
   // Функция для подсветки всех незаполненных обязательных полей
   const showEmptyFields = (): void => {
@@ -121,26 +146,6 @@ const Registration: React.FC = () => {
     }));
   };
 
-  // Валидация всей формы с типизацией
-  useEffect(() => {
-    const checkFormValidity = (): void => {
-      const { email, name, phone } = formData;
-
-      // Форма валидна, если все обязательные поля заполнены и нет ошибок валидации
-      const isValid =
-        email &&
-        name &&
-        phone &&
-        !validateEmail(email) &&
-        !validateName(name) &&
-        !validatePhone(phone);
-      setIsFormValid(!!isValid);
-    };
-
-    // Вызываем проверку при изменении данных формы
-    checkFormValidity();
-  }, [formData]);
-
   // Автоматическое скрытие уведомления через 5 секунд
   useEffect(() => {
     if (message) {
@@ -155,33 +160,14 @@ const Registration: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault(); // Предотвращаем стандартное поведение формы
     showEmptyFields(); // Подсвечиваем все незаполненные обязательные поля
-    setIsLoading(true); // Включаем состояние загрузки
     setMessage(""); // Сбрасываем предыдущие сообщения
 
-    // Финальная проверка перед отправкой
-    const { email, name, phone } = formData;
-
-    const emailError = validateEmail(email);
-    const nameError = validateName(name);
-    const phoneError = validatePhone(phone);
-
-    // Если есть ошибки валидации - показываем ошибку и прерываем отправку
-    if (emailError || nameError || phoneError) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        email: emailError,
-        name: nameError,
-        phone: phoneError,
-      }));
-      setIsLoading(false);
+    // Прерывание, если форма невалидна
+    if (!validateForm()) {
       return;
     }
 
-    // Дополнительная проверка на валидность формы
-    if (!isFormValid) {
-      setIsLoading(false);
-      return;
-    }
+    setIsLoading(true);
 
     try {
       // Параметры для отправки через EmailJS
@@ -194,14 +180,13 @@ const Registration: React.FC = () => {
       };
 
       // Отправка письма через EmailJS сервис
-      const result = await emailjs.send(
+      await emailjs.send(
         import.meta.env.VITE_SERVICE_ID,
         import.meta.env.VITE_TEMPLATE_ID,
         templateParams, // Данные для подстановки в шаблон
         import.meta.env.VITE_PUBLIC_KEY
       );
 
-      console.log("Сообщение отправлено:", result);
       setMessage("success");
       clearForm();
     } catch (error) {
@@ -220,7 +205,6 @@ const Registration: React.FC = () => {
       phone: "",
       message: "",
     });
-    setIsFormValid(false);
     setFieldErrors({
       email: "",
       name: "",
