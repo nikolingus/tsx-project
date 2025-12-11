@@ -175,12 +175,6 @@ const Registration: React.FC = () => {
       return;
     }
 
-    // Дополнительная проверка на валидность формы
-    if (!isFormValid) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
       // Параметры для отправки через EmailJS
       const templateParams = {
@@ -195,10 +189,10 @@ const Registration: React.FC = () => {
 
       // Отправка письма через EmailJS сервис
       const result = await emailjs.send(
-        "service_ok2hqod", // ID сервиса в EmailJS
-        "template_jfsxfsx", // ID шаблона в EmailJS
+        import.meta.env.VITE_SERVICE_ID,
+        import.meta.env.VITE_TEMPLATE_ID,
         templateParams, // Данные для подстановки в шаблон
-        "pLQq_Z4lItNBlOGf5" // Public key для доступа к сервису
+        import.meta.env.VITE_PUBLIC_KEY
       );
 
       console.log("Сообщение отправлено:", result);
