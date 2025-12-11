@@ -54,6 +54,8 @@ const Registration: React.FC = () => {
 
   // Валидация имени с типизацией
   const validateName = (name: string): string => {
+    if (name[0] !== name[0].toUpperCase())
+      return "Имя должно начинаться с заглавной буквы";
     if (!name) return "Имя обязательно для заполнения";
     if (name.length < 2) return "Имя должно содержать минимум 2 символа";
     if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(name))
@@ -274,7 +276,7 @@ const Registration: React.FC = () => {
       <h1 className="registration__title">Регистрация</h1>
 
       {/* Основная форма с типизированными обработчиками */}
-      <form onSubmit={handleSubmit} className="registration__form">
+      <form onSubmit={handleSubmit} className="registration__form" noValidate>
         <ul className="registration__list">
           <li className="registration__item">
             <p className="registration__label">Электронная почта</p>
