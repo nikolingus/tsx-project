@@ -193,8 +193,6 @@ const Registration: React.FC = () => {
         date: new Date().toLocaleString("ru-RU"),
       };
 
-      console.log("Отправляемые параметры:", templateParams);
-
       // Отправка письма через EmailJS сервис
       const result = await emailjs.send(
         import.meta.env.VITE_SERVICE_ID,
