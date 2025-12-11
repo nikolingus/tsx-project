@@ -175,6 +175,12 @@ const Registration: React.FC = () => {
       return;
     }
 
+    // Дополнительная проверка на валидность формы
+    if (!isFormValid) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Параметры для отправки через EmailJS
       const templateParams = {
