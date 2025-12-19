@@ -50,7 +50,6 @@ const Registration: React.FC = () => {
     []
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
   const [message, setMessage] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     email: "",
@@ -82,8 +81,6 @@ const Registration: React.FC = () => {
       } catch (error) {
         console.error("Ошибка при загрузке данных:", error);
         setMessage("error");
-      } finally {
-        setIsLoadingData(false);
       }
     };
 
