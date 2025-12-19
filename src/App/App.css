@@ -14,6 +14,10 @@
   .registration__input {
     width: 50vw;
   }
+  .registration__excursions,
+  .registration__tourists {
+    width: 50vw !important;
+  }
 
   .tours__image {
     width: 40vw;
@@ -43,6 +47,15 @@
     gap: 20px;
     padding: 0 10px;
   }
+  .registration__excursion-item {
+    padding: 10px;
+  }
+  .registration__excursion-name {
+    font-size: 13px;
+  }
+  .registration__excursion-description {
+    font-size: 11px;
+  }
 }
 
 @media screen and (max-width: 845px) {
@@ -61,6 +74,18 @@
   }
   .registration__input {
     width: 60vw;
+  }
+  .registration__excursions,
+  .registration__tourists {
+    width: 60vw !important;
+  }
+  .registration__tourist-remove {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    line-height: 22px;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
   }
 
   .header {
@@ -114,9 +139,19 @@
   .registration__warning {
     width: 70vw;
   }
-
   .registration__input {
     width: 65vw;
+  }
+  .registration__excursions,
+  .registration__tourists {
+    width: 65vw !important;
+  }
+  .registration__excursion-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .registration__excursion-checkbox {
+    margin-bottom: 8px;
   }
 
   .tours__item {
@@ -188,7 +223,7 @@
   }
 
   .registration {
-    height: 115vh;
+    padding-bottom: 30px;
   }
 
   .registration__input {
@@ -196,6 +231,10 @@
     height: 50px;
     font-size: 13px;
     margin-bottom: 15px;
+  }
+  .registration__excursions,
+  .registration__tourists {
+    width: 80vw !important;
   }
   .registration__label {
     font-size: 16px;
@@ -215,6 +254,28 @@
   }
   .registration__error {
     margin-top: -15px;
+  }
+  .registration__tourist-remove {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    line-height: 20px;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+  .registration__tourist-add {
+    width: 80vw !important;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .registration__excursion-item {
+    padding: 8px;
+  }
+  .registration__excursion-name {
+    font-size: 12px;
+  }
+  .registration__excursion-description {
+    font-size: 10px;
   }
 
   .slider {
@@ -294,11 +355,19 @@
   .registration__error {
     margin-top: -5px;
   }
+  .registration__excursions-empty {
+    font-size: 12px;
+    padding: 15px;
+  }
+  .registration__tourist-add {
+    width: 85vw !important;
+  }
 
   .weather__label {
     font-size: 20px;
   }
 }
+
 @media screen and (max-width: 400px) {
   .reviews__text {
     margin-top: 20px;
@@ -316,6 +385,20 @@
   }
   .registration__input {
     margin-bottom: 5px;
+    width: 85vw;
+  }
+  .registration__excursions,
+  .registration__tourists {
+    width: 85vw !important;
+  }
+  .registration__tourist-group {
+    margin-bottom: 10px;
+  }
+  .registration__tourist-input {
+    margin-bottom: 3px;
+  }
+  .registration__tourist-add {
+    width: 85vw !important;
   }
 
   .advantages__description {
@@ -347,6 +430,28 @@
   }
 }
 
+@media screen and (max-width: 375px) {
+  .registration__input {
+    width: 85vw;
+  }
+  .registration__excursions,
+  .registration__tourists {
+    width: 85vw !important;
+  }
+  .registration__tourist-add {
+    width: 85vw !important;
+  }
+  .registration__tourist-remove {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+    line-height: 18px;
+    right: 8px;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
 @media screen and (max-width: 350px) {
   .registration__warning {
     margin-bottom: 30px;
@@ -358,12 +463,17 @@
     height: 40px;
     font-size: 12px;
   }
+  .registration__excursions,
+  .registration__tourists {
+    width: 85vw !important;
+  }
   .registration__label {
     font-size: 14px;
     margin-bottom: 5px;
   }
   .registration__error {
     margin-bottom: 10px;
+    font-size: 11px;
   }
   .registration__title {
     margin-bottom: 40px;
@@ -375,6 +485,27 @@
     width: 140px;
     height: 35px;
     margin-top: 10px;
+  }
+  .registration__tourist-remove {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+    right: 8px;
+    line-height: 18px;
+  }
+  .registration__tourist-add {
+    width: 85vw !important;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .registration__excursion-item {
+    padding: 6px;
+  }
+  .registration__excursion-name {
+    font-size: 11px;
+  }
+  .registration__excursion-description {
+    font-size: 9px;
   }
   .slider__content {
     width: 90vw;

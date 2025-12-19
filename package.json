@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "concurrently \"npm run json-server\" \"npm run dev\"",
+    "json-server": "json-server --watch db.json --port 3001",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -16,6 +18,8 @@
     "dotenv": "^17.2.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-imask": "^7.6.1",
+    "react-input-mask": "^2.0.4",
     "react-jss": "^10.10.0",
     "react-router-dom": "^7.10.1"
   },
@@ -24,11 +28,14 @@
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/react-input-mask": "^3.0.6",
     "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "json-server": "^1.0.0-beta.3",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.3",
     "vite": "^7.2.2"

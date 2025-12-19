@@ -1,8 +1,9 @@
 /* Регистрация */
 .registration {
   margin-top: 3vh;
-  height: 100vh;
   position: relative;
+  min-height: auto;
+  padding-bottom: 40px;
 }
 
 .registration__title {
@@ -39,8 +40,8 @@
 
 .registration__input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: black;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
 }
 
 .registration__input::placeholder {
@@ -60,6 +61,14 @@
   overflow-wrap: break-word;
   margin-bottom: 0px;
   font-family: inherit;
+}
+
+.registration__select {
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 1vw center;
+  background-size: 16px;
+  padding-right: 3vw;
 }
 
 .registration__button {
@@ -91,7 +100,8 @@
 .registration__warning {
   width: 40vw;
   text-align: center;
-  margin-bottom: 80px;
+  margin-top: 15px;
+  margin-bottom: 40px;
   font-size: 14px;
   color: #666;
   line-height: 1.4;
@@ -132,7 +142,6 @@
   box-shadow: none;
 }
 
-/* Всплывающие уведомления */
 .notification {
   position: fixed;
   top: 20px;
@@ -174,7 +183,6 @@
   }
 }
 
-/* Стили для ошибок валидации */
 .registration__input--error {
   border: 1px solid #f44336 !important;
   background-color: #fff5f5;
@@ -188,9 +196,127 @@
 .registration__error {
   color: #d32f2f;
   font-size: 12px;
-  margin-top: -25px;
   margin-bottom: 20px;
   display: block;
   text-align: left;
   padding-left: 5px;
+}
+
+.registration__excursions {
+  width: 40vw;
+  margin-bottom: 30px;
+}
+
+.registration__excursions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.registration__excursion-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.registration__excursion-item:hover {
+  background-color: #f9f9f9;
+  border-color: black;
+}
+
+.registration__excursion-checkbox {
+  margin-top: 3px;
+  margin-right: 12px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.registration__excursion-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.registration__excursion-name {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.registration__excursion-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.registration__excursions-empty {
+  font-size: 14px;
+  color: #999;
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.registration__tourists {
+  width: 40vw;
+  margin-bottom: 30px;
+}
+
+.registration__tourist-group {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.registration__tourist-input {
+  margin-bottom: 5px;
+  width: 100%;
+  padding-right: 40px;
+}
+
+.registration__tourist-remove {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registration__tourist-add {
+  background-color: transparent;
+  color: black;
+  border: 1px solid black;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.registration__tourist-add:hover {
+  background-color: black;
+  color: white;
+}
+
+.registration__tourist-add:active {
+  transform: translateY(1px);
 }
