@@ -3,8 +3,14 @@ import type { FormEvent, ChangeEvent } from "react";
 import emailjs from "@emailjs/browser";
 import "./Registration.css";
 import axios from "axios";
+import { IMaskInput } from "react-imask";
 
 // Типы данных
+interface ITourist {
+  firstName: string;
+  lastName: string;
+}
+
 interface IFormData {
   email: string;
   name: string;
@@ -12,7 +18,7 @@ interface IFormData {
   message: string;
   tourId: string;
   excursionIds: string[];
-  tourists: string[];
+  tourists: ITourist[];
 }
 
 interface ITour {
@@ -31,6 +37,10 @@ interface IExcursion {
 type FormField = keyof Omit<IFormData, "excursionIds" | "tourists">;
 type FieldErrors = Record<FormField, string>;
 type TouchedFields = Record<FormField, boolean>;
+type TouristErrors = Array<{
+  firstName: string;
+  lastName: string;
+}>;
 
 const Registration: React.FC = () => {
   // Состояния
@@ -41,7 +51,7 @@ const Registration: React.FC = () => {
     message: "",
     tourId: "",
     excursionIds: [],
-    tourists: [""],
+    tourists: [{ firstName: "", lastName: "" }],
   });
 
   const [tours, setTours] = useState<ITour[]>([]);
@@ -65,7 +75,12 @@ const Registration: React.FC = () => {
     message: false,
     tourId: false,
   });
-  const [touristErrors, setTouristErrors] = useState<string[]>([""]);
+  const [touristErrors, setTouristErrors] = useState<TouristErrors>([
+    { firstName: "", lastName: "" },
+  ]);
+
+  // Ключ для принудительного пересоздания маски телефона
+  const [phoneKey, setPhoneKey] = useState<number>(0);
 
   // Загрузка данных
   useEffect(() => {
@@ -122,14 +137,11 @@ const Registration: React.FC = () => {
   // Валидация телефона с типизацией
   const validatePhone = useCallback((phone: string): string => {
     if (!phone) return "Телефон обязателен для заполнения";
-    if (
-      (phone.startsWith("+7") && phone.length !== 12) ||
-      (phone[0] === "8" && phone.length !== 11) ||
-      (phone[0] !== "8" && !phone.startsWith("+7"))
-    )
-      return "Введите корректный номер телефона";
-    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{11,13}$/;
-    if (!phoneRegex.test(phone)) return "Введите корректный номер телефона";
+
+    const clearPhone = phone.replace(/\D/g, "");
+    if (clearPhone.length !== 11)
+      return "Номер телефона должен содержать 11 цифр";
+
     return "";
   }, []);
 
@@ -139,15 +151,27 @@ const Registration: React.FC = () => {
     return "";
   }, []);
 
-  // Валидация туриста с типизацией
-  const validateTourist = useCallback((tourist: string): string => {
-    if (!tourist) return "Имя туриста обязательно для заполнения";
-    if (tourist[0] !== tourist[0].toUpperCase())
+  // Валидация имени туриста с типизацией
+  const validateFirstName = useCallback((firstName: string): string => {
+    if (!firstName) return "Имя туриста обязательно для заполнения";
+    if (firstName[0] !== firstName[0].toUpperCase())
       return "Имя туриста должно начинаться с заглавной буквы";
-    if (tourist.length < 2)
+    if (firstName.length < 2)
       return "Имя туриста должно содержать минимум 2 символа";
-    if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(tourist))
+    if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(firstName))
       return "Имя туриста может содержать только буквы, пробелы и дефисы";
+    return "";
+  }, []);
+
+  // Валидация фамилии туриста с типизацией
+  const validateLastName = useCallback((lastName: string): string => {
+    if (!lastName) return "Фамилия туриста обязательна для заполнения";
+    if (lastName[0] !== lastName[0].toUpperCase())
+      return "Фамилия туриста должна начинаться с заглавной буквы";
+    if (lastName.length < 2)
+      return "Фамилия туриста должна содержать минимум 2 символа";
+    if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(lastName))
+      return "Фамилия туриста может содержать только буквы, пробелы и дефисы";
     return "";
   }, []);
 
@@ -159,8 +183,14 @@ const Registration: React.FC = () => {
     const tourError = validateTour(tourId);
 
     // Валидация всех туристов
-    const touristsErrors = tourists.map((tourist) => validateTourist(tourist));
-    const hasTouristErrors = touristsErrors.some((error) => error !== "");
+    const touristsErrors = tourists.map((tourist) => ({
+      firstName: validateFirstName(tourist.firstName),
+      lastName: validateLastName(tourist.lastName),
+    }));
+
+    const hasTouristErrors = touristsErrors.some(
+      (error) => error.firstName !== "" || error.lastName !== ""
+    );
 
     const hasErrors = !!(
       emailError ||
@@ -188,7 +218,8 @@ const Registration: React.FC = () => {
     validateName,
     validatePhone,
     validateTour,
-    validateTourist,
+    validateFirstName,
+    validateLastName,
   ]);
 
   // Функция для подсветки всех незаполненных обязательных полей
@@ -243,22 +274,36 @@ const Registration: React.FC = () => {
     }));
   };
 
-  const handleTouristChange = (index: number, value: string): void => {
+  const handleTouristChange = (
+    index: number,
+    field: keyof ITourist,
+    value: string
+  ): void => {
     const newTourists = [...formData.tourists];
-    newTourists[index] = value;
+    newTourists[index] = { ...newTourists[index], [field]: value };
     setFormData((prev) => ({ ...prev, tourists: newTourists }));
 
     // Валидация конкретного туриста
-    const error = validateTourist(value);
+    const error =
+      field === "firstName"
+        ? validateFirstName(value)
+        : validateLastName(value);
+
     const newErrors = [...touristErrors];
-    newErrors[index] = error;
+    newErrors[index] = {
+      ...newErrors[index],
+      [field]: error,
+    };
     setTouristErrors(newErrors);
   };
 
   // Добавление поля с туристом
   const addTouristField = (): void => {
-    setFormData((prev) => ({ ...prev, tourists: [...prev.tourists, ""] }));
-    setTouristErrors((prev) => [...prev, ""]);
+    setFormData((prev) => ({
+      ...prev,
+      tourists: [...prev.tourists, { firstName: "", lastName: "" }],
+    }));
+    setTouristErrors((prev) => [...prev, { firstName: "", lastName: "" }]);
   };
 
   // Удаление поля с туристом
@@ -307,7 +352,9 @@ const Registration: React.FC = () => {
     try {
       const applicationData = {
         ...formData,
-        tourists: formData.tourists.filter((t) => t.trim() !== ""),
+        tourists: formData.tourists.filter(
+          (t) => t.firstName.trim() !== "" && t.lastName.trim() !== ""
+        ),
       };
 
       await axios.post("http://localhost:3001/applications", applicationData, {
@@ -324,16 +371,18 @@ const Registration: React.FC = () => {
       const templateParams = {
         user_name: formData.name,
         user_email: formData.email,
-        user_phone: formData.phone,
+        user_phone: "+" + formData.phone,
         user_message: formData.message || "Не указано",
         tour_name: selectedTour?.name,
         excursions_list:
           selectedExcursions.map((e) => e.name).join(", ") || "Не выбраны",
         tourists_list: formData.tourists
-          .filter((t) => t.trim() !== "")
+          .filter((t) => t.firstName.trim() !== "" && t.lastName.trim() !== "")
+          .map((t) => `${t.lastName} ${t.firstName}`)
           .join(", "),
         date: new Date().toLocaleString("ru-RU"),
       };
+
       // Отправка письма через EmailJS
       await emailjs.send(
         import.meta.env.VITE_SERVICE_ID,
@@ -352,6 +401,75 @@ const Registration: React.FC = () => {
     }
   };
 
+  // Обработчик изменения телефона
+  const handlePhoneChange = (value: string) => {
+    // Очищаем значение от всех нецифровых символов
+    const cleanedValue = value.replace(/\D/g, "");
+
+    let phoneValue = cleanedValue;
+
+    // Если номер начинается с 8, заменяем на 7
+    if (cleanedValue.startsWith("8") && cleanedValue.length === 11) {
+      phoneValue = "7" + cleanedValue.slice(1);
+    }
+    // Если номер из 10 цифр, добавляем 7
+    else if (cleanedValue.length === 10) {
+      phoneValue = "7" + cleanedValue;
+    }
+    // Если номер из 11 цифр и начинается с 7, оставляем как есть
+    else if (cleanedValue.length === 11 && cleanedValue.startsWith("7")) {
+      phoneValue = cleanedValue;
+    }
+    // Если меньше 10 цифр, сохраняем как есть
+    else if (cleanedValue.length <= 10) {
+      phoneValue = cleanedValue;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      phone: phoneValue,
+    }));
+
+    // Валидация
+    if (phoneValue.length === 11) {
+      const error = validatePhone(phoneValue);
+      setFieldErrors((prev) => ({
+        ...prev,
+        phone: error,
+      }));
+    } else {
+      setFieldErrors((prev) => ({
+        ...prev,
+        phone: "",
+      }));
+    }
+
+    // Заменяю статус на touched
+    if (!touchedFields.phone) {
+      setTouchedFields((prev) => ({
+        ...prev,
+        phone: true,
+      }));
+    }
+  };
+
+  // Обработчик потери фокуса телефона
+  const handlePhoneBlur = (): void => {
+    if (!touchedFields.phone) {
+      setTouchedFields((prev) => ({
+        ...prev,
+        phone: true,
+      }));
+    }
+
+    // Валидация телефона при потере фокуса
+    const error = validatePhone(formData.phone);
+    setFieldErrors((prev) => ({
+      ...prev,
+      phone: error,
+    }));
+  };
+
   // Очистка формы
   const clearForm = (): void => {
     setFormData({
@@ -361,7 +479,7 @@ const Registration: React.FC = () => {
       message: "",
       tourId: "",
       excursionIds: [],
-      tourists: [""],
+      tourists: [{ firstName: "", lastName: "" }],
     });
     setFieldErrors({
       email: "",
@@ -377,7 +495,10 @@ const Registration: React.FC = () => {
       message: false,
       tourId: false,
     });
-    setTouristErrors([""]);
+    setTouristErrors([{ firstName: "", lastName: "" }]);
+
+    // Сбрасываем ключ для принудительного пересоздания маски телефона
+    setPhoneKey((prev) => prev + 1);
   };
 
   // Функция для получения текста уведомления
@@ -462,20 +583,25 @@ const Registration: React.FC = () => {
             )}
           </li>
 
-          {/* Телефон */}
+          {/* Телефон*/}
           <li className="registration__item">
             <p className="registration__label">Номер телефона</p>
-            <input
+            <IMaskInput
+              key={phoneKey} // Ключ для пересоздания компонента при очистке
+              mask="+7 (000) 000-00-00"
+              lazy={false}
+              overwrite="shift"
+              placeholderChar="_"
+              placeholder="+7 (___) ___-__-__"
               className={`registration__input ${
                 touchedFields.phone && fieldErrors.phone
                   ? "registration__input--error"
                   : ""
               }`}
-              type="tel"
-              placeholder="Ваш номер телефона"
-              value={formData.phone}
-              onChange={handleInputChange("phone")}
-              onBlur={handleInputBlur("phone")}
+              onAccept={(value: string) => handlePhoneChange(value)}
+              onBlur={handlePhoneBlur}
+              value={undefined}
+              autofix={false}
             />
             {touchedFields.phone && fieldErrors.phone && (
               <span className="registration__error">{fieldErrors.phone}</span>
@@ -551,15 +677,52 @@ const Registration: React.FC = () => {
             <div className="registration__tourists">
               {formData.tourists.map((tourist, index) => (
                 <div key={index} className="registration__tourist-group">
-                  <input
-                    type="text"
-                    placeholder={`Турист ${index + 1}`}
-                    value={tourist}
-                    onChange={(e) => handleTouristChange(index, e.target.value)}
-                    className={`registration__input registration__tourist-input ${
-                      touristErrors[index] ? "registration__input--error" : ""
-                    }`}
-                  />
+                  <div className="registration__tourist-fields">
+                    <div className="registration__tourist-field">
+                      <input
+                        type="text"
+                        placeholder="Фамилия"
+                        value={tourist.lastName}
+                        onChange={(e) =>
+                          handleTouristChange(index, "lastName", e.target.value)
+                        }
+                        className={`registration__input registration__tourist-input ${
+                          touristErrors[index]?.lastName
+                            ? "registration__input--error"
+                            : ""
+                        }`}
+                      />
+                      {touristErrors[index]?.lastName && (
+                        <span className="registration__error">
+                          {touristErrors[index].lastName}
+                        </span>
+                      )}
+                    </div>
+                    <div className="registration__tourist-field">
+                      <input
+                        type="text"
+                        placeholder="Имя"
+                        value={tourist.firstName}
+                        onChange={(e) =>
+                          handleTouristChange(
+                            index,
+                            "firstName",
+                            e.target.value
+                          )
+                        }
+                        className={`registration__input registration__tourist-input ${
+                          touristErrors[index]?.firstName
+                            ? "registration__input--error"
+                            : ""
+                        }`}
+                      />
+                      {touristErrors[index]?.firstName && (
+                        <span className="registration__error">
+                          {touristErrors[index].firstName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   {formData.tourists.length > 1 && (
                     <button
                       type="button"
@@ -569,11 +732,6 @@ const Registration: React.FC = () => {
                     >
                       ✕
                     </button>
-                  )}
-                  {touristErrors[index] && (
-                    <span className="registration__error">
-                      {touristErrors[index]}
-                    </span>
                   )}
                 </div>
               ))}
