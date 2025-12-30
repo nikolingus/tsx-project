@@ -4,9 +4,17 @@ import emailjs from "@emailjs/browser";
 import "./Registration.css";
 import axios from "axios";
 import { IMaskInput } from "react-imask";
+import {
+  useQuery,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { useNotification } from "../hooks/useNotification";
+import TouristInput from "../components/TouristsList";
 
 // Типы данных
 interface ITourist {
+  id: string;
   firstName: string;
   lastName: string;
 }
@@ -37,10 +45,6 @@ interface IExcursion {
 type FormField = keyof Omit<IFormData, "excursionIds" | "tourists">;
 type FieldErrors = Record<FormField, string>;
 type TouchedFields = Record<FormField, boolean>;
-type TouristErrors = Array<{
-  firstName: string;
-  lastName: string;
-}>;
 
 const Registration: React.FC = () => {
   // Состояния
@@ -51,16 +55,13 @@ const Registration: React.FC = () => {
     message: "",
     tourId: "",
     excursionIds: [],
-    tourists: [{ firstName: "", lastName: "" }],
+    tourists: [{ id: generateId(), firstName: "", lastName: "" }],
   });
 
-  const [tours, setTours] = useState<ITour[]>([]);
-  const [excursions, setExcursions] = useState<IExcursion[]>([]);
   const [availableExcursions, setAvailableExcursions] = useState<IExcursion[]>(
     []
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [message, setMessage] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({
     email: "",
     name: "",
@@ -75,37 +76,56 @@ const Registration: React.FC = () => {
     message: false,
     tourId: false,
   });
-  const [touristErrors, setTouristErrors] = useState<TouristErrors>([
-    { firstName: "", lastName: "" },
-  ]);
+  // Флаг для показа ошибок у туристов
+  const [showTouristErrors, setShowTouristErrors] = useState<boolean>(false);
+  // Состояние для хранения ошибок туристов
+  const [touristErrors, setTouristErrors] = useState<
+    Array<{ firstName: string; lastName: string }>
+  >([{ firstName: "", lastName: "" }]);
+  // Состояние для хранения touched полей туристов
+  const [touristTouched, setTouristTouched] = useState<
+    Array<{ firstName: boolean; lastName: boolean }>
+  >([{ firstName: false, lastName: false }]);
 
   // Ключ для принудительного пересоздания маски телефона
   const [phoneKey, setPhoneKey] = useState<number>(0);
 
-  // Загрузка данных
+  // Уведомления
+  const { notification, showNotification } = useNotification();
+
+  // Загрузка данных с использованием React Query
+  const toursQuery = useQuery<ITour[]>({
+    queryKey: ["tours"],
+    queryFn: () =>
+      axios
+        .get(`${import.meta.env.VITE_BASE_URL}/tours`)
+        .then((res) => res.data),
+  });
+
+  const excursionsQuery = useQuery<IExcursion[]>({
+    queryKey: ["excursions"],
+    queryFn: () =>
+      axios
+        .get(`${import.meta.env.VITE_BASE_URL}/excursions`)
+        .then((res) => res.data),
+  });
+
+  // Обработка ошибок загрузки данных
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const [toursResponse, excursionsResponse] = await Promise.all([
-          axios.get("http://localhost:3001/tours"),
-          axios.get("http://localhost:3001/excursions"),
-        ]);
-
-        setTours(toursResponse.data);
-        setExcursions(excursionsResponse.data);
-      } catch (error) {
-        console.error("Ошибка при загрузке данных:", error);
-        setMessage("error");
-      }
-    };
-
-    getData();
-  }, []);
+    if (toursQuery.error) {
+      console.error("Ошибка при загрузке туров:", toursQuery.error);
+      showNotification("error", "Ошибка при загрузке туров");
+    }
+    if (excursionsQuery.error) {
+      console.error("Ошибка при загрузке экскурсий:", excursionsQuery.error);
+      showNotification("error", "Ошибка при загрузке экскурсий");
+    }
+  }, [toursQuery.error, excursionsQuery.error, showNotification]);
 
   // Обновление доступных экскурсий
   useEffect(() => {
-    if (formData.tourId) {
-      const available = excursions.filter((excursion) =>
+    if (formData.tourId && excursionsQuery.data) {
+      const available = excursionsQuery.data.filter((excursion: IExcursion) =>
         excursion.tourIds.includes(formData.tourId)
       );
       setAvailableExcursions(available);
@@ -113,7 +133,7 @@ const Registration: React.FC = () => {
     } else {
       setAvailableExcursions([]);
     }
-  }, [formData.tourId, excursions]);
+  }, [formData.tourId, excursionsQuery.data]);
 
   // Валидация email с типизацией
   const validateEmail = useCallback((email: string): string => {
@@ -153,10 +173,10 @@ const Registration: React.FC = () => {
 
   // Валидация имени туриста с типизацией
   const validateFirstName = useCallback((firstName: string): string => {
-    if (!firstName) return "Имя туриста обязательно для заполнения";
+    if (!firstName.trim()) return "Имя туриста обязательно для заполнения";
     if (firstName[0] !== firstName[0].toUpperCase())
       return "Имя туриста должно начинаться с заглавной буквы";
-    if (firstName.length < 2)
+    if (firstName.trim().length < 2)
       return "Имя туриста должно содержать минимум 2 символа";
     if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(firstName))
       return "Имя туриста может содержать только буквы, пробелы и дефисы";
@@ -165,10 +185,10 @@ const Registration: React.FC = () => {
 
   // Валидация фамилии туриста с типизацией
   const validateLastName = useCallback((lastName: string): string => {
-    if (!lastName) return "Фамилия туриста обязательна для заполнения";
+    if (!lastName.trim()) return "Фамилия туриста обязательна для заполнения";
     if (lastName[0] !== lastName[0].toUpperCase())
       return "Фамилия туриста должна начинаться с заглавной буквы";
-    if (lastName.length < 2)
+    if (lastName.trim().length < 2)
       return "Фамилия туриста должна содержать минимум 2 символа";
     if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(lastName))
       return "Фамилия туриста может содержать только буквы, пробелы и дефисы";
@@ -183,12 +203,12 @@ const Registration: React.FC = () => {
     const tourError = validateTour(tourId);
 
     // Валидация всех туристов
-    const touristsErrors = tourists.map((tourist) => ({
+    const newTouristErrors = tourists.map((tourist) => ({
       firstName: validateFirstName(tourist.firstName),
       lastName: validateLastName(tourist.lastName),
     }));
 
-    const hasTouristErrors = touristsErrors.some(
+    const hasTouristErrors = newTouristErrors.some(
       (error) => error.firstName !== "" || error.lastName !== ""
     );
 
@@ -208,7 +228,7 @@ const Registration: React.FC = () => {
         message: "",
         tourId: tourError,
       });
-      setTouristErrors(touristsErrors);
+      setTouristErrors(newTouristErrors);
     }
 
     return !hasErrors;
@@ -232,6 +252,21 @@ const Registration: React.FC = () => {
       tourId: true,
     };
     setTouchedFields(newTouchedFields);
+    setShowTouristErrors(true);
+
+    // Помечаем все поля туристов как touched
+    const newTouristTouched = formData.tourists.map(() => ({
+      firstName: true,
+      lastName: true,
+    }));
+    setTouristTouched(newTouristTouched);
+
+    // Обновление ошибок туристов
+    const newTouristErrors = formData.tourists.map((tourist) => ({
+      firstName: validateFirstName(tourist.firstName),
+      lastName: validateLastName(tourist.lastName),
+    }));
+    setTouristErrors(newTouristErrors);
   };
 
   // Обработчик изменения поля с типизацией параметров
@@ -274,47 +309,103 @@ const Registration: React.FC = () => {
     }));
   };
 
+  // Обработчик изменения данных туриста
   const handleTouristChange = (
-    index: number,
-    field: keyof ITourist,
+    id: string,
+    field: keyof Omit<ITourist, "id">,
     value: string
   ): void => {
+    const index = formData.tourists.findIndex((tourist) => tourist.id === id);
+    if (index === -1) return;
+
+    // Обновление данных туриста
     const newTourists = [...formData.tourists];
     newTourists[index] = { ...newTourists[index], [field]: value };
     setFormData((prev) => ({ ...prev, tourists: newTourists }));
 
-    // Валидация конкретного туриста
+    // Валидиация при изменении
+    const shouldValidate = touristTouched[index]?.[field] || showTouristErrors;
+
+    if (shouldValidate) {
+      const newTouristErrors = [...touristErrors];
+      const error =
+        field === "firstName"
+          ? validateFirstName(value)
+          : validateLastName(value);
+
+      newTouristErrors[index] = {
+        ...newTouristErrors[index],
+        [field]: error,
+      };
+      setTouristErrors(newTouristErrors);
+    }
+  };
+
+  // Обработчик потери фокуса для полей туристов
+  const handleTouristBlur = (
+    id: string,
+    field: keyof Omit<ITourist, "id">
+  ): void => {
+    const index = formData.tourists.findIndex((tourist) => tourist.id === id);
+    if (index === -1) return;
+
+    // Обновление touched
+    const newTouristTouched = [...touristTouched];
+    newTouristTouched[index] = {
+      ...newTouristTouched[index],
+      [field]: true,
+    };
+    setTouristTouched(newTouristTouched);
+
+    // Валидация поля при потере фокуса
+    const tourist = formData.tourists[index];
+    const value = tourist[field];
     const error =
       field === "firstName"
         ? validateFirstName(value)
         : validateLastName(value);
 
-    const newErrors = [...touristErrors];
-    newErrors[index] = {
-      ...newErrors[index],
+    // Обновление ошибок
+    const newTouristErrors = [...touristErrors];
+    newTouristErrors[index] = {
+      ...newTouristErrors[index],
       [field]: error,
     };
-    setTouristErrors(newErrors);
+    setTouristErrors(newTouristErrors);
   };
 
   // Добавление поля с туристом
   const addTouristField = (): void => {
     setFormData((prev) => ({
       ...prev,
-      tourists: [...prev.tourists, { firstName: "", lastName: "" }],
+      tourists: [
+        ...prev.tourists,
+        { id: generateId(), firstName: "", lastName: "" },
+      ],
     }));
     setTouristErrors((prev) => [...prev, { firstName: "", lastName: "" }]);
+    setTouristTouched((prev) => [
+      ...prev,
+      { firstName: false, lastName: false },
+    ]);
   };
 
   // Удаление поля с туристом
-  const removeTouristField = (index: number): void => {
+  const removeTouristField = (id: string): void => {
+    const index = formData.tourists.findIndex((tourist) => tourist.id === id);
+    if (index === -1) return;
+
     if (formData.tourists.length > 1) {
-      const newTourists = formData.tourists.filter((_, i) => i !== index);
+      const newTourists = formData.tourists.filter(
+        (tourist) => tourist.id !== id
+      );
       setFormData((prev) => ({ ...prev, tourists: newTourists }));
 
-      // Удаляем соответствующую ошибку
-      const newErrors = touristErrors.filter((_, i) => i !== index);
-      setTouristErrors(newErrors);
+      // Удаление ошибок
+      const newTouristErrors = touristErrors.filter((_, i) => i !== index);
+      const newTouristTouched = touristTouched.filter((_, i) => i !== index);
+      setTouristErrors(newTouristErrors);
+      setTouristTouched(newTouristTouched);
     }
   };
 
@@ -327,23 +418,13 @@ const Registration: React.FC = () => {
     });
   };
 
-  // Автоматическое скрытие уведомления
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
   // Отправка формы
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     showEmptyFields();
-    setMessage("");
 
     if (!validateForm()) {
+      showNotification("error", "Пожалуйста, заполните все обязательные поля");
       return;
     }
 
@@ -357,23 +438,30 @@ const Registration: React.FC = () => {
         ),
       };
 
-      await axios.post("http://localhost:3001/applications", applicationData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const selectedTour = tours.find((t) => t.id === formData.tourId);
-      const selectedExcursions = excursions.filter((e) =>
-        formData.excursionIds.includes(e.id)
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/applications`,
+        applicationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
+
+      const selectedTour = toursQuery.data?.find(
+        (t: ITour) => t.id === formData.tourId
+      );
+      const selectedExcursions =
+        excursionsQuery.data?.filter((e: IExcursion) =>
+          formData.excursionIds.includes(e.id)
+        ) || [];
 
       const templateParams = {
         user_name: formData.name,
         user_email: formData.email,
         user_phone: "+" + formData.phone,
         user_message: formData.message || "Не указано",
-        tour_name: selectedTour?.name,
+        tour_name: selectedTour?.name || "Не выбран",
         excursions_list:
           selectedExcursions.map((e) => e.name).join(", ") || "Не выбраны",
         tourists_list: formData.tourists
@@ -391,11 +479,11 @@ const Registration: React.FC = () => {
         import.meta.env.VITE_PUBLIC_KEY
       );
 
-      setMessage("success");
+      showNotification("success", "Заявка успешно отправлена!");
       clearForm();
     } catch (error) {
       console.error("Ошибка отправки:", error);
-      setMessage("error");
+      showNotification("error", "Ошибка отправки заявки");
     } finally {
       setIsLoading(false);
     }
@@ -479,7 +567,7 @@ const Registration: React.FC = () => {
       message: "",
       tourId: "",
       excursionIds: [],
-      tourists: [{ firstName: "", lastName: "" }],
+      tourists: [{ id: generateId(), firstName: "", lastName: "" }],
     });
     setFieldErrors({
       email: "",
@@ -495,17 +583,12 @@ const Registration: React.FC = () => {
       message: false,
       tourId: false,
     });
+    setShowTouristErrors(false);
     setTouristErrors([{ firstName: "", lastName: "" }]);
+    setTouristTouched([{ firstName: false, lastName: false }]);
 
     // Сбрасываем ключ для принудительного пересоздания маски телефона
     setPhoneKey((prev) => prev + 1);
-  };
-
-  // Функция для получения текста уведомления
-  const getNotificationText = (): string => {
-    return message === "success"
-      ? "Заявка успешно отправлена!"
-      : "Ошибка отправки!";
   };
 
   // Обработчик изменения input с типизацией события
@@ -528,17 +611,18 @@ const Registration: React.FC = () => {
 
   return (
     <section className="registration section" id="order">
-      {message && (
+      {/* Уведомление */}
+      {notification ? (
         <div
           className={`notification ${
-            message === "success"
+            notification.type === "success"
               ? "notification--success"
               : "notification--error"
           }`}
         >
-          {getNotificationText()}
+          {notification.message}
         </div>
-      )}
+      ) : null}
 
       <h1 className="registration__title">Регистрация</h1>
       <form onSubmit={handleSubmit} className="registration__form" noValidate>
@@ -558,9 +642,9 @@ const Registration: React.FC = () => {
               onChange={handleInputChange("email")}
               onBlur={handleInputBlur("email")}
             />
-            {touchedFields.email && fieldErrors.email && (
+            {touchedFields.email && fieldErrors.email ? (
               <span className="registration__error">{fieldErrors.email}</span>
-            )}
+            ) : null}
           </li>
 
           {/* Имя */}
@@ -578,16 +662,16 @@ const Registration: React.FC = () => {
               onChange={handleInputChange("name")}
               onBlur={handleInputBlur("name")}
             />
-            {touchedFields.name && fieldErrors.name && (
+            {touchedFields.name && fieldErrors.name ? (
               <span className="registration__error">{fieldErrors.name}</span>
-            )}
+            ) : null}
           </li>
 
           {/* Телефон*/}
           <li className="registration__item">
             <p className="registration__label">Номер телефона</p>
             <IMaskInput
-              key={phoneKey} // Ключ для пересоздания компонента при очистке
+              key={phoneKey}
               mask="+7 (000) 000-00-00"
               lazy={false}
               overwrite="shift"
@@ -603,9 +687,9 @@ const Registration: React.FC = () => {
               value={undefined}
               autofix={false}
             />
-            {touchedFields.phone && fieldErrors.phone && (
+            {touchedFields.phone && fieldErrors.phone ? (
               <span className="registration__error">{fieldErrors.phone}</span>
-            )}
+            ) : null}
           </li>
 
           {/* Тур */}
@@ -622,15 +706,15 @@ const Registration: React.FC = () => {
               onBlur={handleInputBlur("tourId")}
             >
               <option value="">Выберите тур</option>
-              {tours.map((tour) => (
+              {toursQuery.data?.map((tour: ITour) => (
                 <option key={tour.id} value={tour.id}>
                   {tour.name}
                 </option>
               ))}
             </select>
-            {touchedFields.tourId && fieldErrors.tourId && (
+            {touchedFields.tourId && fieldErrors.tourId ? (
               <span className="registration__error">{fieldErrors.tourId}</span>
-            )}
+            ) : null}
           </li>
 
           {/* Экскурсии */}
@@ -676,64 +760,24 @@ const Registration: React.FC = () => {
             <p className="registration__label">Список туристов</p>
             <div className="registration__tourists">
               {formData.tourists.map((tourist, index) => (
-                <div key={index} className="registration__tourist-group">
-                  <div className="registration__tourist-fields">
-                    <div className="registration__tourist-field">
-                      <input
-                        type="text"
-                        placeholder="Фамилия"
-                        value={tourist.lastName}
-                        onChange={(e) =>
-                          handleTouristChange(index, "lastName", e.target.value)
-                        }
-                        className={`registration__input registration__tourist-input ${
-                          touristErrors[index]?.lastName
-                            ? "registration__input--error"
-                            : ""
-                        }`}
-                      />
-                      {touristErrors[index]?.lastName && (
-                        <span className="registration__error">
-                          {touristErrors[index].lastName}
-                        </span>
-                      )}
-                    </div>
-                    <div className="registration__tourist-field">
-                      <input
-                        type="text"
-                        placeholder="Имя"
-                        value={tourist.firstName}
-                        onChange={(e) =>
-                          handleTouristChange(
-                            index,
-                            "firstName",
-                            e.target.value
-                          )
-                        }
-                        className={`registration__input registration__tourist-input ${
-                          touristErrors[index]?.firstName
-                            ? "registration__input--error"
-                            : ""
-                        }`}
-                      />
-                      {touristErrors[index]?.firstName && (
-                        <span className="registration__error">
-                          {touristErrors[index].firstName}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {formData.tourists.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTouristField(index)}
-                      className="registration__tourist-remove"
-                      aria-label="Удалить туриста"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
+                <TouristInput
+                  key={tourist.id}
+                  tourist={tourist}
+                  errors={
+                    touristErrors[index] || { firstName: "", lastName: "" }
+                  }
+                  touched={
+                    touristTouched[index] || {
+                      firstName: false,
+                      lastName: false,
+                    }
+                  }
+                  onChange={handleTouristChange}
+                  onBlur={handleTouristBlur}
+                  onRemove={removeTouristField}
+                  showRemove={formData.tourists.length > 1}
+                  showErrors={showTouristErrors}
+                />
               ))}
               <button
                 type="button"
@@ -775,4 +819,19 @@ const Registration: React.FC = () => {
   );
 };
 
-export default Registration;
+// Генерация id туриста
+function generateId(): string {
+  return `tourist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// React Query
+const queryClient = new QueryClient();
+const RegistrationPage: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Registration />
+    </QueryClientProvider>
+  );
+};
+
+export default RegistrationPage;
